@@ -1,12 +1,16 @@
 Package: NCDFSG
 Type: Package
-Title: What the Package Does (Title Case)
+Title: NetCDF-CF Simple Geometries
 Imports:
   ncdf4
+Depends:
+  R (>= 3.0)
+Suggests:
+    testthat
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Authors@R: c( person("David", "Blodgett", role = c("aut", "cre"),
+    email = "dblodgett@usgs.gov"))
+Description: An R package to draft a reference implementation of the proposed NetCDF-CF simple geometries specification.
+License: CC0
 LazyData: TRUE
 RoxygenNote: 5.0.1
