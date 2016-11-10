@@ -8,7 +8,7 @@ multiPoint_timeSeries(nc_file, names = NULL, lats = NULL, lons = NULL,
   alts = NULL, multiPoint = NULL, add_to_existing = FALSE)
 }
 \arguments{
-\item{nc_file}{A string file path to the nc file to be created. If NULL an object of class \code{ncdf4} is returned.}
+\item{nc_file}{A string file path to the nc file to be created.}
 
 \item{names}{A character vector of names for the points. If NULL, integers in the range 1:length(points) are used.}
 

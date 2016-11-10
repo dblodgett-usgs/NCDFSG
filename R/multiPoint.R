@@ -1,7 +1,7 @@
 #'@title Put points in a CF timeSeries featuretype
 #'
 #'
-#'@param nc_file A string file path to the nc file to be created. If NULL an object of class \code{ncdf4} is returned.
+#'@param nc_file A string file path to the nc file to be created.
 #'@param names A character vector of names for the points. If NULL, integers in the range 1:length(points) are used.
 #'@param lats Vector of WGS84 latitudes
 #'@param lons Vector of WGS84 longitudes
