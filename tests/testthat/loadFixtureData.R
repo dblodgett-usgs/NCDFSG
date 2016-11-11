@@ -16,6 +16,7 @@ multipolygonData <- readWKT(fixtureData[["2d"]]$multipolygon)
 multipolygon_holeData <- readWKT(fixtureData[["2d"]]$multipolygon_hole)
 multipolygons_holesData <- readWKT(fixtureData[["2d"]]$multipolygons_holes)
 multigeometries_polygons_holesData <- readWKT(paste0("GEOMETRYCOLLECTION(",fixtureData[["2d"]]$multipolygons_holes,", ",fixtureData[["2d"]]$multipolygon_hole,")"), id = c("1","2"))
+
 saveRDS(multipointData,file="data/multiPointData.rds")
 saveRDS(pointData,file="data/pointData.rds")
 saveRDS(lineData, file="data/lineData.rds")
@@ -26,3 +27,30 @@ saveRDS(multipolygonData, file="data/multipolygonData.rds")
 saveRDS(multipolygon_holeData, file="data/multipolygon_holeData.rds")
 saveRDS(multipolygons_holesData, file="data/multipolygons_holes.rds")
 saveRDS(multigeometries_polygons_holesData, file="data/multigeometries_polygons_holes.rds")
+
+order<-c("point", "linestring", "polygon",
+         "multipoint", "multilinestring", "multipolygon",
+         "polygon_hole", "multipolygon_hole", "multipolygons_holes")
+
+namesstr<-c("Point (2D)", "LineString (2D)", "Polygon (2D)",
+         "MultiPoint (2D)", "MultiLineString (2D)", "MultiPolygon (2D)",
+         "Polygon with One Interior Ring (2D)", "MultiPolygon with One Interior Ring (2D)",
+         "Multiple MultiPolygons with Interior Rings (2D)")
+
+sink('examples.md')
+cat(paste("# Examples - Contiguous Ragged Arrays  \nCreated",Sys.time(),"  \n\n"))
+
+for(geom in 1:length(namesstr)) {
+  cat(paste0("## ", namesstr[geom],"  \nWell Known Text (WKT): ```",fixtureData[["2d"]][order[geom]]),"```  \n")
+  fileName<-paste0("sample_",order[geom],".nc")
+  if(grepl('point',order[geom])) {
+    multiPoint_timeSeries(fileName,multiPoint = readWKT(fixtureData[["2d"]][order[geom]]))
+  } else {
+    geom_timeSeries(fileName,readWKT(fixtureData[["2d"]][order[geom]]))
+  }
+  cat("Common Data Language (CDL):\n```  \n")
+  t<-system(paste0("ncdump ", fileName),intern = TRUE)
+  cat(t,sep = "\n")
+  cat("  \n```  \n\n")
+}
+sink()
