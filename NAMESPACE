@@ -2,7 +2,6 @@
 
 export(geom_timeSeries)
 export(multiPoint_timeSeries)
-export(polygon_timeSeries)
 importFrom(broom,tidy)
 importFrom(ncdf4,nc_close)
 importFrom(ncdf4,nc_create)
