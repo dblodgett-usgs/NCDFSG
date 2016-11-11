@@ -1,10 +1,10 @@
 library(ncdf4)
 
-context("NCDF SG Base Fixture Tests")
+context("NCDF SG polygon tests")
 
 test_that("polygon_timeSeries for basic polygon", {
   polygonData <- readRDS("data/polygonData.rds")
-  nc_file <- polygon_timeSeries(nc_file=tempfile(), polygon = polygonData)
+  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
   expect_equal(nc$dim$instance$vals,c(1))
@@ -14,16 +14,18 @@ test_that("polygon_timeSeries for basic polygon", {
                as.numeric(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]))
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
                length(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]))
-  expect_equivalent(ncatt_get(nc,varid=0,"Conventions")$value,"CF-1.7")
+  expect_equivalent(ncatt_get(nc,varid=0,"Conventions")$value,"CF-1.8")
   expect_equivalent(ncatt_get(nc,varid=0,"cdm_data_type")$value,"polygon")
-  expect_equivalent(ncatt_get(nc,varid=0,"standard_name_vocabulary")$value,"CF-1.7")
+  expect_equivalent(ncatt_get(nc,varid=0,"standard_name_vocabulary")$value,"CF-1.8")
   expect_equivalent(ncatt_get(nc,varid="instance_name","standard_name")$value,"instance_id")
   expect_equivalent(ncatt_get(nc,varid="instance_name","cf_role")$value,"timeseries_id")
+  expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"geometry x node")
+  expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"geometry y node")
 })
 
 test_that("polygon_timeSeries for polygon with a hole.", {
   polygonData <- readRDS("data/polygon_holeData.rds")
-  nc_file <- polygon_timeSeries(nc_file=tempfile(), polygon = polygonData)
+  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
@@ -35,7 +37,7 @@ test_that("polygon_timeSeries for polygon with a hole.", {
 
 test_that("polygon_timeSeries for multipolygon.", {
   polygonData <- readRDS("data/multipolygonData.rds")
-  nc_file <- polygon_timeSeries(nc_file=tempfile(), polygon = polygonData)
+  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
@@ -47,7 +49,7 @@ test_that("polygon_timeSeries for multipolygon.", {
 
 test_that("polygon_timeSeries for a multipolygon with a hole.", {
   polygonData <- readRDS("data/multipolygon_holeData.rds")
-  nc_file <- polygon_timeSeries(nc_file=tempfile(), polygon = polygonData)
+  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
@@ -61,7 +63,7 @@ test_that("polygon_timeSeries for a multipolygon with a hole.", {
 
 test_that("polygon_timeSeries for multipolygons with holes.", {
   polygonData <- readRDS("data/multipolygons_holes.rds")
-  nc_file <- polygon_timeSeries(nc_file=tempfile(), polygon = polygonData)
+  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[16],-1)
