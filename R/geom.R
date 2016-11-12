@@ -35,7 +35,11 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
     linesMode<-TRUE
   } else if(class(geomData) == "SpatialPolygons") {
     linesMode<-FALSE
-  } else { stop("geomData must be of class SpatialLines or SpatialPolygons") }
+  } else if(class(geomData) == "SpatialPolygonsDataFrame") {
+    linesMode<-FALSE
+    attData<-geomData@data
+    geomData<-polygons(geomData)
+  } else { stop("geomData must be of class SpatialLines, SpatialPolygons, or SpatialPolygonsDataFrame") }
 
   if(linesMode) {
     geomData<-tidy(SpatialLinesDataFrame(geomData,data=as.data.frame(names,stringsAsFactors = FALSE)))
@@ -56,7 +60,7 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
   # Will contain order and mutlipolygon/hole break values.
   coordinate_index_vals <- 1:coordinate_index_len
 
-  if(coordinate_index_len==length(geomData$long)) {
+  if(coordinate_index_len==length(geomData$long)) { # If there are no multiGeometries or holses.
     coordinate_index_vals <- 1:coordinate_index_len
   } else {
     # for each id, the piece field increments by one for each piece of the geometry same for holes and multipoly.
@@ -103,13 +107,25 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
   yVals <- geomData$lat
 
   coordinate_index_dim<-ncdim_def('coordinate_index', '', 1:coordinate_index_len, create_dimvar = FALSE)
-  coordinate_index_var<-ncvar_def(name = 'coordinate_index', units = '', dim = coordinate_index_dim, longname = "index for coordinates and geometry break values")
+  coordinate_index_var<-ncvar_def(name = 'coordinate_index', units = '', dim = coordinate_index_dim,
+                                  longname = "index for coordinates and geometry break values", prec = "integer")
 
-  coordinate_index_stop_var<-ncvar_def(name = 'coordinate_index_stop', units = '', dim = instance_dim, longname = "index for last coordinate in each instance geometry")
+  coordinate_index_stop_var<-ncvar_def(name = 'coordinate_index_stop', units = '', dim = instance_dim,
+                                       longname = "index for last coordinate in each instance geometry", prec = "integer")
 
-  nc <- nc_create(filename = nc_file, vars = list(coordinate_index_var,
-                                                  coordinate_index_stop_var,
-                                                  instance_name_var, xVar, yVar))
+  vars<-list()
+
+  types<-list(numeric="double", integer = "integer", character="char")
+  if(exists("attData")) {
+    for(colName in names(attData)) {
+      vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = instance_dim, prec = types[[class(attData[colName][[1]])]])))
+    }
+  }
+
+  vars<-c(vars, list(coordinate_index_var), list(coordinate_index_stop_var), list(instance_name_var), list(xVar), list(yVar))
+
+  nc <- nc_create(filename = nc_file, vars = vars)
+
   nc_close(nc)
 
   nc <- nc_open(nc_file,write = TRUE)
@@ -119,6 +135,12 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
   ncvar_put(nc = nc, varid = 'y', vals = yVals)
   ncvar_put(nc = nc, varid = 'coordinate_index', vals = coordinate_index_vals)
   ncvar_put(nc = nc, varid = 'coordinate_index_stop', vals = coordinate_index_stop_vals)
+
+  if(exists("attData")) {
+    for(colName in names(attData)) {
+      ncvar_put(nc = nc, varid = colName, vals = attData[colName][[1]])
+      }
+  }
 
   ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'geometry x node')
   ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'geometry y node')
