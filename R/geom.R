@@ -154,15 +154,15 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'outer_ring_order', attval = 'anticlockwise')
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'closure_convention', attval = 'last_node_equals_first')
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multipolygon')
-    ncatt_put(nc, 0,'cdm_data_type','polygon')
+    # ncatt_put(nc, 0,'cdm_data_type','polygon')
   }
   ncatt_put(nc = nc, varid = 'coordinate_index_stop', attname = 'contiguous_ragged_dimension', attval = 'coordinate_index')
   ncatt_put(nc, 'instance_name', 'cf_role', 'timeseries_id')
   ncatt_put(nc, 'instance_name','standard_name','instance_id')
   #Important Global Variables
   ncatt_put(nc, 0,'Conventions','CF-1.8')
-  ncatt_put(nc, 0,'featureType','timeSeries')
-  ncatt_put(nc, 0,'standard_name_vocabulary','CF-1.8')
+  # ncatt_put(nc, 0,'featureType','timeSeries')
+  # ncatt_put(nc, 0,'standard_name_vocabulary','CF-1.8')
 
   nc_close(nc)
 

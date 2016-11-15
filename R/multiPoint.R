@@ -101,9 +101,9 @@ multiPoint_timeSeries = function(nc_file, names = NULL, lats = NULL, lons = NULL
 
   #Important Global Variables
   ncatt_put(nc, 0,'Conventions','CF-1.7')
-  ncatt_put(nc, 0,'featureType','timeSeries')
-  ncatt_put(nc, 0,'cdm_data_type','Station')
-  ncatt_put(nc, 0,'standard_name_vocabulary','CF-1.7')
+  # ncatt_put(nc, 0,'featureType','timeSeries')
+  # ncatt_put(nc, 0,'cdm_data_type','Station')
+  # ncatt_put(nc, 0,'standard_name_vocabulary','CF-1.7')
 
   #Put data in NC file
   ncvar_put(nc, lat_var, yCoords, count=n)
