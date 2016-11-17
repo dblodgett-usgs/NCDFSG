@@ -3,6 +3,7 @@
 export(ToNCDFSG)
 export(addGeomData)
 export(addInstanceData)
+export(addPoints)
 importFrom(broom,tidy)
 importFrom(ncdf4,nc_close)
 importFrom(ncdf4,nc_create)

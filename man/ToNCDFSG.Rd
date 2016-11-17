@@ -10,7 +10,8 @@ ToNCDFSG(nc_file, geomData = NULL, names = NULL, lats = NULL,
 \arguments{
 \item{nc_file}{A string file path to the nc file to be created.}
 
-\item{geomData}{An object of class \code{SpatialLines} or \code{SpatialPolygons} with WGS84 lon in the x coordinate and lat in the y coordinate.
+\item{geomData}{An object of class \code{SpatialPoints}, \code{SpatialLines} or
+\code{SpatialPolygons} with WGS84 lon in the x coordinate and lat in the y coordinate.
 Note that three dimensional geometries is not supported.}
 
 \item{names}{A character vector of names for the points. If NULL, integers are used.}
@@ -20,9 +21,6 @@ Note that three dimensional geometries is not supported.}
 \item{lons}{Vector of WGS84 longitudes}
 
 \item{alts}{Vector of altitudes assumed to be height above mean sea level}
-
-\item{multiPoint}{An object of class \code{SpatialPoints} with WGS84 lon in the x coordinate and lat in the y coordinate.
-Note that MULTIPOINT Z is not supported altitude must be passed in seperately.}
 }
 \description{
 Creates a file with point, line or polygon instance data ready for the extended NetCDF-CF timeSeries featuretype format.

@@ -4,7 +4,7 @@ context("NCDF SG point tests")
 
 test_that("Point_timeSeries", {
   multipointData <- readRDS("data/pointData.rds")
-  nc_file <- ToNCDFSG(nc_file=tempfile(), multiPoint = multipointData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = multipointData)
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
   expect_equal(nc$dim$instance$vals,c(1))
@@ -19,7 +19,7 @@ test_that("Point_timeSeries", {
 
 test_that("multiPoint_timeSeries", {
   multipointData <- readRDS("data/multipointData.rds")
-  nc_file <- ToNCDFSG(nc_file=tempfile(), multiPoint = multipointData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = multipointData)
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
   expect_equal(nc$dim$instance$vals,c(1,2,3,4))
