@@ -87,37 +87,11 @@ ToNCDFSG = function(nc_file, geomData = NULL, names = NULL,
     n<-length(names)
   }
 
-  # 'instance' is used to be consistent with the CF specification which calls the geometries, or features, instances.
-  instance_dim = ncdim_def('instance', '', 1:n, create_dimvar=FALSE)
-  strlen_dim = ncdim_def('name_strlen', '', 1:max(sapply(names, nchar)), create_dimvar=FALSE)
-  instance_name_var = ncvar_def('instance_name', '', dim=list(strlen_dim, instance_dim), missval=NULL, prec='char', longname='Instance Names')
-
-  vars<-list()
-
-  types<-list(numeric="double", integer = "integer", character="char")
   if(exists("attData")) {
-    for(colName in names(attData)) {
-      vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = instance_dim, prec = types[[class(attData[colName][[1]])]])))
-    }
+    nc_file <- addInstanceData(nc_file, names, attData = attData)
+  } else {
+    nc_file <- addInstanceData(nc_file, names)
   }
-
-  vars<-c(vars, list(instance_name_var))
-
-  nc <- nc_create(filename = nc_file, vars = vars)
-
-  nc_close(nc)
-
-  nc <- nc_open(nc_file,write = TRUE)
-
-  ncvar_put(nc = nc, varid = 'instance_name', vals = names)
-
-  if(exists("attData")) {
-    for(colName in names(attData)) {
-      ncvar_put(nc = nc, varid = colName, vals = attData[colName][[1]])
-    }
-  }
-
-  nc_close(nc)
 
   if(linesMode) {
     geomData<-tidy(SpatialLinesDataFrame(geomData,data=as.data.frame(names,stringsAsFactors = FALSE)))
@@ -187,14 +161,14 @@ ToNCDFSG = function(nc_file, geomData = NULL, names = NULL,
     xVals <- geomData$long
     yVals <- geomData$lat
 
+    nc <- nc_open(nc_file,write = TRUE)
+
     coordinate_index_dim<-ncdim_def('coordinate_index', '', 1:coordinate_index_len, create_dimvar = FALSE)
     coordinate_index_var<-ncvar_def(name = 'coordinate_index', units = '', dim = coordinate_index_dim,
                                     longname = "index for coordinates and geometry break values", prec = "integer")
 
-    coordinate_index_stop_var<-ncvar_def(name = 'coordinate_index_stop', units = '', dim = instance_dim,
+    coordinate_index_stop_var<-ncvar_def(name = 'coordinate_index_stop', units = '', dim = nc$dim$instance,
                                          longname = "index for last coordinate in each instance geometry", prec = "integer")
-
-    nc <- nc_open(nc_file,write = TRUE)
 
     nc <- ncvar_add(nc,coordinate_index_var)
     nc <- ncvar_add(nc,coordinate_index_stop_var)
@@ -227,13 +201,15 @@ ToNCDFSG = function(nc_file, geomData = NULL, names = NULL,
   }
 
   if(pointsMode) {
-    lat_var 		= ncvar_def('lat', 'degrees_north', dim=instance_dim, -999, prec='double', longname = 'latitude of the observation')
-    lon_var 		= ncvar_def('lon', 'degrees_east', dim=instance_dim, -999, prec='double', longname = 'longitude of the observation')
+    nc<-nc_open(nc_file, write = TRUE)
+
+    lat_var 		= ncvar_def('lat', 'degrees_north', dim=nc$dim$instance, -999, prec='double', longname = 'latitude of the observation')
+    lon_var 		= ncvar_def('lon', 'degrees_east', dim=nc$dim$instance, -999, prec='double', longname = 'longitude of the observation')
 
     if(!is.null(alts[1])){
-      alt_var = ncvar_def('alt', 'm', dim=instance_dim, missval=-999, prec='double', longname='height above mean sea level')
+      alt_var = ncvar_def('alt', 'm', dim=nc$dim$instance, missval=-999, prec='double', longname='height above mean sea level')
     }
-    nc<-nc_open(nc_file, write = TRUE)
+
     nc <- ncvar_add(nc, lat_var)
     nc <- ncvar_add(nc, lon_var)
 
@@ -263,5 +239,44 @@ ToNCDFSG = function(nc_file, geomData = NULL, names = NULL,
     ncatt_put(nc, 0,'Conventions','CF-1.7')
     nc_close(nc)
   }
+  return(nc_file)
+}
+
+
+addInstanceData <- function(nc_file, names, attData = NULL) {
+  n <- length(names)
+  # 'instance' is used to be consistent with the CF specification which calls the geometries, or features, instances.
+  instance_dim = ncdim_def('instance', '', 1:n, create_dimvar=FALSE)
+  strlen_dim = ncdim_def('name_strlen', '', 1:max(sapply(names, nchar)), create_dimvar=FALSE)
+  instance_name_var = ncvar_def('instance_name', '', dim=list(strlen_dim, instance_dim), missval=NULL, prec='char', longname='Instance Names')
+
+  vars<-list()
+
+  types<-list(numeric="double", integer = "integer", character="char")
+  if(!is.null(attData)) {
+    for(colName in names(attData)) {
+      vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = instance_dim,
+                                   prec = types[[class(attData[colName][[1]])]])))
+    }
+  }
+
+  vars<-c(vars, list(instance_name_var))
+
+  nc <- nc_create(filename = nc_file, vars = vars)
+
+  nc_close(nc)
+
+  nc <- nc_open(nc_file,write = TRUE)
+
+  ncvar_put(nc = nc, varid = 'instance_name', vals = names)
+
+  if(!is.null(attData)) {
+    for(colName in names(attData)) {
+      ncvar_put(nc = nc, varid = colName, vals = attData[colName][[1]])
+    }
+  }
+
+  nc_close(nc)
+
   return(nc_file)
 }
