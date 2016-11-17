@@ -44,9 +44,9 @@ for(geom in 1:length(namesstr)) {
   cat(paste0("## ", namesstr[geom],"  \nWell Known Text (WKT): ```",fixtureData[["2d"]][order[geom]]),"```  \n")
   fileName<-paste0("sample_",order[geom],".nc")
   if(grepl('point',order[geom])) {
-    multiPoint_timeSeries(fileName,multiPoint = readWKT(fixtureData[["2d"]][order[geom]]))
+    ToNCDFSG(fileName,multiPoint = readWKT(fixtureData[["2d"]][order[geom]]))
   } else {
-    geom_timeSeries(fileName,readWKT(fixtureData[["2d"]][order[geom]]))
+    ToNCDFSG(fileName,readWKT(fixtureData[["2d"]][order[geom]]))
   }
   cat("Common Data Language (CDL):\n```  \n")
   t<-system(paste0("ncdump ", fileName),intern = TRUE)

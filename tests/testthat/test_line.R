@@ -4,7 +4,7 @@ context("NCDF SG line tests")
 
 test_that("linedata works", {
   lineData <- readRDS("data/lineData.rds")
-  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = lineData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData)
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
   expect_equal(nc$dim$instance$vals,c(1))
@@ -19,6 +19,6 @@ test_that("linedata works", {
 
 test_that("multiLine data works", {
   lineData <- readRDS("data/multiLineData.rds")
-  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = lineData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData)
   nc<-nc_open(nc_file)
 })

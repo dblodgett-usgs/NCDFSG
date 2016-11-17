@@ -4,7 +4,7 @@ context("NCDF SG polygon tests")
 
 test_that("polygon_timeSeries for basic polygon", {
   polygonData <- readRDS("data/polygonData.rds")
-  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
   expect_equal(nc$dim$instance$vals,c(1))
@@ -23,7 +23,7 @@ test_that("polygon_timeSeries for basic polygon", {
 
 test_that("polygon_timeSeries for polygon with a hole.", {
   polygonData <- readRDS("data/polygon_holeData.rds")
-  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
@@ -35,7 +35,7 @@ test_that("polygon_timeSeries for polygon with a hole.", {
 
 test_that("polygon_timeSeries for multipolygon.", {
   polygonData <- readRDS("data/multipolygonData.rds")
-  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
@@ -47,7 +47,7 @@ test_that("polygon_timeSeries for multipolygon.", {
 
 test_that("polygon_timeSeries for a multipolygon with a hole.", {
   polygonData <- readRDS("data/multipolygon_holeData.rds")
-  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
@@ -63,7 +63,7 @@ test_that("polygon_timeSeries for a multipolygon with a hole.", {
 
 test_that("polygon_timeSeries for multipolygons with holes.", {
   polygonData <- readRDS("data/multipolygons_holes.rds")
-  nc_file <- geom_timeSeries(nc_file=tempfile(), geomData = polygonData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[16],-1)

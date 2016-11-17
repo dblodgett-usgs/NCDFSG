@@ -1,4 +1,4 @@
-#'@title Put lines in a CF file
+#'@title Put geometry data in a NetCDF-CF File
 #'
 #'
 #'@param nc_file A string file path to the nc file to be created.
@@ -12,7 +12,8 @@
 #'Note that MULTIPOINT Z is not supported altitude must be passed in seperately.
 
 #'@description
-#'Creates a file with line or polygon instance data ready for the NetCDF-CF timeSeries featuretype format.
+#'Creates a file with point, line or polygon instance data ready for the extended NetCDF-CF timeSeries featuretype format.
+#'Will also add attributes if a sp dataframe object is passed in.
 #'
 #'@references
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
@@ -23,7 +24,7 @@
 #'
 #'@export
 
-geom_timeSeries = function(nc_file, geomData = NULL, names = NULL,
+ToNCDFSG = function(nc_file, geomData = NULL, names = NULL,
                            lats = NULL, lons = NULL, alts=NULL,
                            multiPoint = NULL){
 
