@@ -49,10 +49,6 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
 
   ids<-unique(geomData$id)
 
-  id_finder<-function(i, d) {max(which(d==i))} # Finds the last index of the value i.
-  # coordinate_index_stop_vals are where each polygon stops in the coordinates.
-  coordinate_index_stop_vals <- sapply(ids, id_finder, d = geomData$id, USE.NAMES = FALSE)
-
   # coordinate index needs to be the length of the coordinates plus the number of multilines.
   # group contains one value for each unique polygon ring.
   coordinate_index_len <- length(geomData$long) + length(levels(geomData$group)) - n
@@ -60,8 +56,13 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
   # Will contain order and mutlipolygon/hole break values.
   coordinate_index_vals <- 1:coordinate_index_len
 
-  if(coordinate_index_len==length(geomData$long)) { # If there are no multiGeometries or holses.
+  if(coordinate_index_len==length(geomData$long)) { # If there are no multiGeometries or holes.
     coordinate_index_vals <- 1:coordinate_index_len
+
+    id_finder<-function(i, d) {max(which(d==i))} # Finds the last index of the value i.
+    # coordinate_index_stop_vals are where each polygon stops in the coordinates.
+    coordinate_index_stop_vals <- sapply(ids, id_finder, d = geomData$id, USE.NAMES = FALSE)
+
   } else {
     # for each id, the piece field increments by one for each piece of the geometry same for holes and multipoly.
     coordinate_index_break_vals <- which(diff(as.numeric(geomData$piece))==1)
@@ -91,7 +92,12 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
       startCoord <- cIndVal + extraCoord + 1
     }
     # Last set of normal polygons.
-    coordinate_index_vals[startCoord:(length(geomData$order) + extraCoord)] <- geomData$order[startInd:length(geomData$order)]
+    coordinate_index_vals[startCoord:(length(geomData$order) + extraCoord)] <- startInd:length(geomData$order)
+
+    # Finds the last index of the value i this time returning the index into the coordinate_index which includes extraCoords.
+    id_finder<-function(i, d, s) {which(s == max(which(d==i)))}
+    # coordinate_index_stop_vals are where each polygon stops in the coordinates.
+    coordinate_index_stop_vals <- sapply(ids, id_finder, d = geomData$id,s=coordinate_index_vals, USE.NAMES = FALSE)
   }
 
   # 'instance' is used to be consistent with the CF specification which calls the geometries, or features, instances.

@@ -15,8 +15,6 @@ test_that("polygon_timeSeries for basic polygon", {
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
                length(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]))
   expect_equivalent(ncatt_get(nc,varid=0,"Conventions")$value,"CF-1.8")
-  expect_equivalent(ncatt_get(nc,varid=0,"cdm_data_type")$value,"polygon")
-  expect_equivalent(ncatt_get(nc,varid=0,"standard_name_vocabulary")$value,"CF-1.8")
   expect_equivalent(ncatt_get(nc,varid="instance_name","standard_name")$value,"instance_id")
   expect_equivalent(ncatt_get(nc,varid="instance_name","cf_role")$value,"timeseries_id")
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"geometry x node")
@@ -30,7 +28,7 @@ test_that("polygon_timeSeries for polygon with a hole.", {
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
                (length(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]) +
-                 length(polygonData@polygons[[1]]@Polygons[[2]]@coords[,2])))
+                 length(polygonData@polygons[[1]]@Polygons[[2]]@coords[,2]))+1)
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[6],-2) # manually verified this is right.
   expect_equal(length(nc$dim$coordinate_index$vals), 10)
 })
@@ -42,7 +40,7 @@ test_that("polygon_timeSeries for multipolygon.", {
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
                (length(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]) +
-                  length(polygonData@polygons[[1]]@Polygons[[2]]@coords[,2])))
+                  length(polygonData@polygons[[1]]@Polygons[[2]]@coords[,2]))+1) # +1 for the extracoord.
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[5],-1)
   expect_equal(length(nc$dim$coordinate_index$vals), 10)
 })
@@ -55,10 +53,12 @@ test_that("polygon_timeSeries for a multipolygon with a hole.", {
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
                (length(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]) +
                 length(polygonData@polygons[[1]]@Polygons[[2]]@coords[,2]) +
-                length(polygonData@polygons[[1]]@Polygons[[3]]@coords[,2])))
+                length(polygonData@polygons[[1]]@Polygons[[3]]@coords[,2]))+2) # +2 for two extracoords.
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[7],-1)
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[12],-2)
-  expect_equal(length(nc$dim$coordinate_index$vals), (as.numeric(ncvar_get(nc,'coordinate_index_stop'))+2))
+  expect_equal(length(nc$dim$coordinate_index$vals), as.numeric(ncvar_get(nc,'coordinate_index_stop')))
+  expect_equal(length(ncvar_get(nc,"x")), (as.numeric(ncvar_get(nc,'coordinate_index_stop'))-2)) # Two for extracoords.
+  expect_equal(length(ncvar_get(nc, "x")), nc$dim$coordinate_index$vals[ncvar_get(nc,'coordinate_index_stop')]) # Check indexes are clean.
 })
 
 test_that("polygon_timeSeries for multipolygons with holes.", {
@@ -68,5 +68,7 @@ test_that("polygon_timeSeries for multipolygons with holes.", {
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[16],-1)
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[6],-2)
-  expect_equal(length(nc$dim$coordinate_index$vals), (as.numeric(ncvar_get(nc,'coordinate_index_stop'))+5))
+  expect_equal(length(nc$dim$coordinate_index$vals), as.numeric(ncvar_get(nc,'coordinate_index_stop')))
+  expect_equal(length(ncvar_get(nc,"x")), (as.numeric(ncvar_get(nc,'coordinate_index_stop'))-5)) # Five for extracoords.
+  expect_equal(length(ncvar_get(nc, "x")), nc$dim$coordinate_index$vals[ncvar_get(nc,'coordinate_index_stop')]) # Check indexes are clean.
 })
