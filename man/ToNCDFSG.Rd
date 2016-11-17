@@ -2,7 +2,7 @@
 % Please edit documentation in R/geom.R
 \name{ToNCDFSG}
 \alias{ToNCDFSG}
-\title{Put geometry data in a NetCDF-CF File}
+\title{Convert sp objects to NetCDF}
 \usage{
 ToNCDFSG(nc_file, geomData = NULL, names = NULL, lats = NULL,
   lons = NULL, alts = NULL, multiPoint = NULL)
