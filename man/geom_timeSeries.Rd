@@ -4,7 +4,8 @@
 \alias{geom_timeSeries}
 \title{Put lines in a CF file}
 \usage{
-geom_timeSeries(nc_file, geomData, names = NULL)
+geom_timeSeries(nc_file, geomData = NULL, names = NULL, lats = NULL,
+  lons = NULL, alts = NULL, multiPoint = NULL)
 }
 \arguments{
 \item{nc_file}{A string file path to the nc file to be created.}
@@ -13,6 +14,15 @@ geom_timeSeries(nc_file, geomData, names = NULL)
 Note that three dimensional geometries is not supported.}
 
 \item{names}{A character vector of names for the points. If NULL, integers are used.}
+
+\item{lats}{Vector of WGS84 latitudes}
+
+\item{lons}{Vector of WGS84 longitudes}
+
+\item{alts}{Vector of altitudes assumed to be height above mean sea level}
+
+\item{multiPoint}{An object of class \code{SpatialPoints} with WGS84 lon in the x coordinate and lat in the y coordinate.
+Note that MULTIPOINT Z is not supported altitude must be passed in seperately.}
 }
 \description{
 Creates a file with line or polygon instance data ready for the NetCDF-CF timeSeries featuretype format.

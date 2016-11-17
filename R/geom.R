@@ -5,7 +5,12 @@
 #'@param names A character vector of names for the points. If NULL, integers are used.
 #'@param geomData An object of class \code{SpatialLines} or \code{SpatialPolygons} with WGS84 lon in the x coordinate and lat in the y coordinate.
 #'Note that three dimensional geometries is not supported.
-#'
+#'@param lats Vector of WGS84 latitudes
+#'@param lons Vector of WGS84 longitudes
+#'@param alts Vector of altitudes assumed to be height above mean sea level
+#'@param multiPoint An object of class \code{SpatialPoints} with WGS84 lon in the x coordinate and lat in the y coordinate.
+#'Note that MULTIPOINT Z is not supported altitude must be passed in seperately.
+
 #'@description
 #'Creates a file with line or polygon instance data ready for the NetCDF-CF timeSeries featuretype format.
 #'
@@ -18,18 +23,14 @@
 #'
 #'@export
 
-geom_timeSeries = function(nc_file, geomData, names = NULL){
+geom_timeSeries = function(nc_file, geomData = NULL, names = NULL,
+                           lats = NULL, lons = NULL, alts=NULL,
+                           multiPoint = NULL){
 
   hole_break_val <- -2
   multi_break_val <- -1
 
-  if(is.null(names)) {
-    names<-as.character(c(1:length(geomData)))
-  } else {
-    if(length(names)!=length(geomData)) stop('names must be same length as geomData')
-  }
-
-  n<-length(names)
+  pointsMode<-FALSE
 
   if(class(geomData) == "SpatialLines") {
     linesMode<-TRUE
@@ -39,13 +40,90 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
     linesMode<-FALSE
     attData<-geomData@data
     geomData<-polygons(geomData)
-  } else { stop("geomData must be of class SpatialLines, SpatialPolygons, or SpatialPolygonsDataFrame") }
+  }  else { pointsMode <- TRUE }
+
+  if(pointsMode) {
+    if(class(multiPoint) != "SpatialPoints" && !is.null(lats)) {
+      stop("Did not find supported spatial data.")
+    }
+  }
+
+  # One last check for points in case they are in addition to other things.
+  if(class(multiPoint) == "SpatialPoints" || !is.null(lats)) {
+    pointsMode <- TRUE
+
+    if(is.null(lats) && class(multiPoint)=="SpatialPoints") {
+      xCoords<-multiPoint@coords[,1]
+      yCoords<-multiPoint@coords[,2]
+    }
+
+    if(!is.null(lats)) {
+      xCoords<-lons
+      yCoords<-lats
+    }
+
+    if(is.null(names)) {
+      names<-as.character(c(1:length(xCoords)))
+    }
+
+    n<-length(names)
+
+    if(length(yCoords)!=n || length(xCoords)!=n){
+      stop('station_names, lats, and lons must all be vectors of the same length')
+    }
+
+    if(!is.null(alts[1]) && length(alts)!=n){
+      stop('station_names and alts must all be vectors of the same length')
+    }
+  }
+
+  if(is.null(names)) {
+    names<-as.character(c(1:length(geomData)))
+  } else {
+    if(length(names)!=length(geomData)) stop('names must be same length as data')
+  }
+
+  n<-length(names)
+
+  # 'instance' is used to be consistent with the CF specification which calls the geometries, or features, instances.
+  instance_dim = ncdim_def('instance', '', 1:n, create_dimvar=FALSE)
+  strlen_dim = ncdim_def('name_strlen', '', 1:max(sapply(names, nchar)), create_dimvar=FALSE)
+  instance_name_var = ncvar_def('instance_name', '', dim=list(strlen_dim, instance_dim), missval=NULL, prec='char', longname='Instance Names')
+
+  vars<-list()
+
+  types<-list(numeric="double", integer = "integer", character="char")
+  if(exists("attData")) {
+    for(colName in names(attData)) {
+      vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = instance_dim, prec = types[[class(attData[colName][[1]])]])))
+    }
+  }
+
+  vars<-c(vars, list(instance_name_var))
+
+  nc <- nc_create(filename = nc_file, vars = vars)
+
+  nc_close(nc)
+
+  nc <- nc_open(nc_file,write = TRUE)
+
+  ncvar_put(nc = nc, varid = 'instance_name', vals = names)
+
+  if(exists("attData")) {
+    for(colName in names(attData)) {
+      ncvar_put(nc = nc, varid = colName, vals = attData[colName][[1]])
+    }
+  }
+
+  nc_close(nc)
 
   if(linesMode) {
     geomData<-tidy(SpatialLinesDataFrame(geomData,data=as.data.frame(names,stringsAsFactors = FALSE)))
   } else {
     geomData<-tidy(geomData)
   }
+
+  if(exists("geomData")) {
 
   ids<-unique(geomData$id)
 
@@ -100,11 +178,6 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
     coordinate_index_stop_vals <- sapply(ids, id_finder, d = geomData$id,s=coordinate_index_vals, USE.NAMES = FALSE)
   }
 
-  # 'instance' is used to be consistent with the CF specification which calls the geometries, or features, instances.
-  instance_dim = ncdim_def('instance', '', 1:n, create_dimvar=FALSE)
-  strlen_dim = ncdim_def('name_strlen', '', 1:max(sapply(names, nchar)), create_dimvar=FALSE)
-  instance_name_var = ncvar_def('instance_name', '', dim=list(strlen_dim, instance_dim), missval=NULL, prec='char', longname='Instance Names')
-
   coord_dim<-ncdim_def('coordinates', '', 1:length(geomData$long), create_dimvar=FALSE)
   xVar <- ncvar_def(name = "x", units = 'degrees_east', dim = coord_dim, prec = "double")
   yVar <- ncvar_def(name = "y", units = 'degrees_north', dim = coord_dim, prec = "double")
@@ -119,34 +192,16 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
   coordinate_index_stop_var<-ncvar_def(name = 'coordinate_index_stop', units = '', dim = instance_dim,
                                        longname = "index for last coordinate in each instance geometry", prec = "integer")
 
-  vars<-list()
-
-  types<-list(numeric="double", integer = "integer", character="char")
-  if(exists("attData")) {
-    for(colName in names(attData)) {
-      vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = instance_dim, prec = types[[class(attData[colName][[1]])]])))
-    }
-  }
-
-  vars<-c(vars, list(coordinate_index_var), list(coordinate_index_stop_var), list(instance_name_var), list(xVar), list(yVar))
-
-  nc <- nc_create(filename = nc_file, vars = vars)
-
-  nc_close(nc)
-
   nc <- nc_open(nc_file,write = TRUE)
 
-  ncvar_put(nc = nc, varid = 'instance_name', vals = names)
+  nc <- ncvar_add(nc,coordinate_index_var)
+  nc <- ncvar_add(nc,coordinate_index_stop_var)
+  nc <- ncvar_add(nc,xVar)
+  nc <- ncvar_add(nc,yVar)
   ncvar_put(nc = nc, varid = 'x', vals = xVals)
   ncvar_put(nc = nc, varid = 'y', vals = yVals)
   ncvar_put(nc = nc, varid = 'coordinate_index', vals = coordinate_index_vals)
   ncvar_put(nc = nc, varid = 'coordinate_index_stop', vals = coordinate_index_stop_vals)
-
-  if(exists("attData")) {
-    for(colName in names(attData)) {
-      ncvar_put(nc = nc, varid = colName, vals = attData[colName][[1]])
-      }
-  }
 
   ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'geometry x node')
   ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'geometry y node')
@@ -154,23 +209,57 @@ geom_timeSeries = function(nc_file, geomData, names = NULL){
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
   if(linesMode) {
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multiline')
-    ncatt_put(nc, 0,'cdm_data_type','line')
   } else {
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'hole_break_value', attval = hole_break_val)
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'outer_ring_order', attval = 'anticlockwise')
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'closure_convention', attval = 'last_node_equals_first')
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multipolygon')
-    # ncatt_put(nc, 0,'cdm_data_type','polygon')
   }
   ncatt_put(nc = nc, varid = 'coordinate_index_stop', attname = 'contiguous_ragged_dimension', attval = 'coordinate_index')
   ncatt_put(nc, 'instance_name', 'cf_role', 'timeseries_id')
   ncatt_put(nc, 'instance_name','standard_name','instance_id')
   #Important Global Variables
   ncatt_put(nc, 0,'Conventions','CF-1.8')
-  # ncatt_put(nc, 0,'featureType','timeSeries')
-  # ncatt_put(nc, 0,'standard_name_vocabulary','CF-1.8')
 
   nc_close(nc)
+  }
 
+  if(pointsMode) {
+    lat_var 		= ncvar_def('lat', 'degrees_north', dim=instance_dim, -999, prec='double', longname = 'latitude of the observation')
+    lon_var 		= ncvar_def('lon', 'degrees_east', dim=instance_dim, -999, prec='double', longname = 'longitude of the observation')
+
+    if(!is.null(alts[1])){
+      alt_var = ncvar_def('alt', 'm', dim=instance_dim, missval=-999, prec='double', longname='height above mean sea level')
+    }
+    nc<-nc_open(nc_file, write = TRUE)
+    ncvar_add(nc, lat_var)
+    ncvar_add(nc, lon_var)
+    ncvar_add(nc, station_var)
+    if(!is.null(alts[1])){
+      ncvar_add(nc, alt_far)
+    }
+
+    ncvar_put(nc, lat_var, yCoords, count=n)
+    ncvar_put(nc, lon_var, xCoords, count=n)
+
+    if(!is.null(alts[1])){
+      ncvar_put(nc, alt_var, alts, count=n)
+    }
+
+    #add standard_names
+    ncatt_put(nc, 'lat', 'standard_name', 'latitude')
+    ncatt_put(nc, 'lon', 'standard_name', 'longitude')
+
+    if(!is.null(alts[1])){
+      ncatt_put(nc, 'alt', 'standard_name', 'height')
+    }
+
+    ncatt_put(nc, 'instance_name', 'cf_role', 'timeseries_id')
+    ncatt_put(nc, 'instance_name','standard_name','station_id')
+
+    #Important Global Variables
+    ncatt_put(nc, 0,'Conventions','CF-1.7')
+    nc_close(nc)
+  }
   return(nc_file)
 }
