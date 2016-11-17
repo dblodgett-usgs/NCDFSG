@@ -30,7 +30,8 @@ geom_timeSeries = function(nc_file, geomData = NULL, names = NULL,
   hole_break_val <- -2
   multi_break_val <- -1
 
-  pointsMode<-FALSE
+  pointsMode <- FALSE
+  linesMode <- FALSE
 
   if(class(geomData) == "SpatialLines") {
     linesMode<-TRUE
@@ -75,15 +76,15 @@ geom_timeSeries = function(nc_file, geomData = NULL, names = NULL,
     if(!is.null(alts[1]) && length(alts)!=n){
       stop('station_names and alts must all be vectors of the same length')
     }
-  }
-
-  if(is.null(names)) {
-    names<-as.character(c(1:length(geomData)))
   } else {
-    if(length(names)!=length(geomData)) stop('names must be same length as data')
-  }
+    if(is.null(names)) {
+      names<-as.character(c(1:length(geomData)))
+    } else {
+      if(length(names)!=length(geomData)) stop('names must be same length as data')
+    }
 
-  n<-length(names)
+    n<-length(names)
+  }
 
   # 'instance' is used to be consistent with the CF specification which calls the geometries, or features, instances.
   instance_dim = ncdim_def('instance', '', 1:n, create_dimvar=FALSE)
@@ -119,11 +120,11 @@ geom_timeSeries = function(nc_file, geomData = NULL, names = NULL,
 
   if(linesMode) {
     geomData<-tidy(SpatialLinesDataFrame(geomData,data=as.data.frame(names,stringsAsFactors = FALSE)))
-  } else {
+  } else if(!is.null(geomData)) {
     geomData<-tidy(geomData)
   }
 
-  if(exists("geomData")) {
+  if(!is.null(geomData)) {
 
     ids<-unique(geomData$id)
 
@@ -232,11 +233,11 @@ geom_timeSeries = function(nc_file, geomData = NULL, names = NULL,
       alt_var = ncvar_def('alt', 'm', dim=instance_dim, missval=-999, prec='double', longname='height above mean sea level')
     }
     nc<-nc_open(nc_file, write = TRUE)
-    ncvar_add(nc, lat_var)
-    ncvar_add(nc, lon_var)
-    ncvar_add(nc, station_var)
+    nc <- ncvar_add(nc, lat_var)
+    nc <- ncvar_add(nc, lon_var)
+
     if(!is.null(alts[1])){
-      ncvar_add(nc, alt_far)
+      nc <- ncvar_add(nc, alt_far)
     }
 
     ncvar_put(nc, lat_var, yCoords, count=n)
