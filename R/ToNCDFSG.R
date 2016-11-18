@@ -71,6 +71,8 @@ ToNCDFSG = function(nc_file, geomData = NULL, names = NULL, lats = NULL, lons = 
   }
 
   if(exists("attData")) {
+    itemp <- sapply(attData, is.factor)
+    attData[itemp] <- lapply(attData[itemp], as.character)
     nc_file <- addInstanceData(nc_file, names, attData = attData)
   } else {
     nc_file <- addInstanceData(nc_file, names)

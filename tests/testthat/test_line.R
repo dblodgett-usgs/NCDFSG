@@ -35,3 +35,12 @@ test_that("multiLine data works", {
   expect_equal(sum(lineData@lines[[1]]@Lines[[2]]@coords[,1]),
                sum(ncvar_get(nc,nc$var$x,start = secondMultiStart, count = secondMultiCount)))
 })
+
+test_that("multiline data frame works", {
+  lineData <- readRDS("data/multiLineData.rds")
+  testdata<-as.data.frame(list("name"=c("test_name"), "id"=c(1)))
+  lineData <- SpatialLinesDataFrame(lineData, testdata)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData, names = as.character(lineData@data$name))
+  nc<-nc_open(nc_file)
+  expect_equal(class(nc),"ncdf4")
+})
