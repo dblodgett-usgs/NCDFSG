@@ -40,11 +40,11 @@ test_that("multiPoint_timeSeries", {
   expect_equivalent(ncatt_get(nc,varid="lon","standard_name")$value,"longitude")
 })
 
-test_that("multiPoint lat lon", {
+test_that("multiPoint lat lon alt", {
   multipointData <- readRDS("data/multipointData.rds")
   lat<-multipointData@coords[,2]
   lon<-multipointData@coords[,1]
-  alt<-1:length(lat)
+  alt<-1:(length(lat))
   nc_file <- ToNCDFSG(nc_file=tempfile(), lons = lon, lats = lat, alts = alt)
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
@@ -53,6 +53,12 @@ test_that("multiPoint lat lon", {
   expect_equal(as.numeric(ncvar_get(nc,'lon')),as.numeric(multipointData@coords[,1]))
   expect_equal(as.numeric(ncvar_get(nc,'alt')),alt)
   expect_equivalent(ncatt_get(nc,varid="alt","standard_name")$value,"height")
+  alt<-1:(length(lat)-2)
+  expect_error(ToNCDFSG(nc_file=tempfile(), lons = lon, lats = lat, alts = alt),
+               regexp = "station_names and alts must all be vectors of the same length")
+  lat<-lat[1:(length(lat)-2)]
+  expect_error(ToNCDFSG(nc_file=tempfile(), lons = lon, lats = lat),
+               regexp = "station_names, lats, and lons must all be vectors of the same length")
 })
 
 test_that("shapefile_point", {
