@@ -26,7 +26,7 @@ ToNCDFSG = function(nc_file, geomData = NULL, names = NULL, lats = NULL, lons = 
 
   pointsMode <- FALSE
 
-  if(is.null(names) || !is.null(geomData)) {
+  if(is.null(names) && !is.null(geomData)) {
     names<-as.character(c(1:length(geomData)))
   }
 
@@ -47,7 +47,8 @@ ToNCDFSG = function(nc_file, geomData = NULL, names = NULL, lats = NULL, lons = 
   } else if(class(geomData) == "SpatialPointsDataFrame") {
     pointsMode<-TRUE
     attData<-geomData@data
-    geomData<-geomData@points
+    xCoords<-geomData@coords[,1]
+    yCoords<-geomData@coords[,2]
   } else if(!is.null(lats)) {
     pointsMode<-TRUE
     xCoords<-lons

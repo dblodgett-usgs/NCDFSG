@@ -1,10 +1,5 @@
 library(ncdf4)
 
-# data prep.
-# library(maptools)
-# shapeData<-readShapePoints("tests/testthat/data/se_sitest")
-# saveRDS(shapeData,file="tests/testthat/data/se_points_data.rds")
-
 context("NCDF SG line tests")
 
 test_that("linedata works", {
