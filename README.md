@@ -1,6 +1,8 @@
 # NetCDF-CF Simple Geometries R
 [![Build Status](https://travis-ci.org/dblodgett-usgs/NCDFSG.svg)](https://travis-ci.org/dblodgett-usgs/NCDFSG) [![Coverage Status](https://coveralls.io/repos/dblodgett-usgs/NCDFSG/badge.svg)](https://coveralls.io/r/dblodgett-usgs/NCDFSG)
 
+This package is an experimental implementation of a proposed NetCDF-CF extension that will include simple geometries. [More information is available here.](https://github.com/bekozi/netCDF-CF-simple-geometry)
+
 ## Reference Sources
 https://github.com/valcu/rangeMapper/blob/master/R/utils-spatial.R
 https://github.com/dblodgett-usgs/netcdf.dsg
