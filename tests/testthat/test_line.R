@@ -1,5 +1,10 @@
 library(ncdf4)
 
+# data prep.
+# library(maptools)
+# shapeData<-readShapePoints("tests/testthat/data/se_sitest")
+# saveRDS(shapeData,file="tests/testthat/data/se_points_data.rds")
+
 context("NCDF SG line tests")
 
 test_that("linedata works", {
@@ -21,4 +26,17 @@ test_that("multiLine data works", {
   lineData <- readRDS("data/multiLineData.rds")
   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData)
   nc<-nc_open(nc_file)
+  expect_equal(class(nc),"ncdf4")
+  firstMultiStart<-1
+  firstMultiStop<-nc$dim$coordinate_index$vals[which(nc$dim$coordinate_index$vals==-1)[1]-1]
+  firstMultiCount<-nc$dim$coordinate_index$vals[which(nc$dim$coordinate_index$vals==-1)[1]-1]-firstMultiStart+1
+  expect_equal(firstMultiCount, length(lineData@lines[[1]]@Lines[[1]]@coords[,1]))
+  expect_equal(sum(lineData@lines[[1]]@Lines[[1]]@coords[,1]),
+               sum(ncvar_get(nc,nc$var$x,start = firstMultiStart, count = firstMultiCount)))
+  firstFeatureEnd<-ncvar_get(nc, nc$var$coordinate_index_stop)[1]
+  secondMultiStart<-nc$dim$coordinate_index$vals[which(nc$dim$coordinate_index$vals==-1)[1]+1]
+  secondMultiCount<-nc$dim$coordinate_index$vals[firstFeatureEnd]-secondMultiStart+1
+  expect_equal(secondMultiCount, length(lineData@lines[[1]]@Lines[[2]]@coords[,1]))
+  expect_equal(sum(lineData@lines[[1]]@Lines[[2]]@coords[,1]),
+               sum(ncvar_get(nc,nc$var$x,start = secondMultiStart, count = secondMultiCount)))
 })
