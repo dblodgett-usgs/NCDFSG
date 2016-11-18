@@ -11,7 +11,7 @@
 #'@references
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
 #'
-#'@importFrom ncdf4 nc_close ncvar_def ncvar_put ncatt_put ncdim_def
+#'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
 #'
 #'@export
 addPoints<-function(nc_file,xCoords,yCoords,alts=NULL) {

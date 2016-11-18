@@ -13,7 +13,7 @@
 #'@references
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
 #'
-#'@importFrom ncdf4 nc_close ncvar_def ncvar_put ncatt_put ncdim_def
+#'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
 #'@importFrom broom tidy
 #'
 #'@export
@@ -80,9 +80,9 @@ addGeomData<-function(nc_file, geomData, names) {
     coordinate_index_vals[startCoord:(length(geomData$order) + extraCoord)] <- startInd:length(geomData$order)
 
     # Finds the last index of the value i this time returning the index into the coordinate_index which includes extraCoords.
-    id_finder<-function(i, d, s) {which(s == max(which(d==i)))}
+    id_finder2<-function(i, d, s) {which(s == max(which(d==i)))}
     # coordinate_index_stop_vals are where each polygon stops in the coordinates.
-    coordinate_index_stop_vals <- sapply(ids, id_finder, d = geomData$id,s=coordinate_index_vals, USE.NAMES = FALSE)
+    coordinate_index_stop_vals <- sapply(ids, id_finder2, d = geomData$id,s=coordinate_index_vals, USE.NAMES = FALSE)
   }
 
   coord_dim<-ncdim_def('coordinates', '', 1:length(geomData$long), create_dimvar=FALSE)

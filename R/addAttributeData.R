@@ -12,7 +12,7 @@
 #'@references
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
 #'
-#'@importFrom ncdf4 nc_create nc_close ncvar_def ncvar_put ncdim_def
+#'@importFrom ncdf4 nc_open ncvar_add nc_create nc_close ncvar_def ncvar_put ncdim_def
 #'
 #'@export
 addInstanceData <- function(nc_file, names, attData = NULL) {

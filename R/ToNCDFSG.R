@@ -17,12 +17,11 @@
 #'@references
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
 #'
-#'@importFrom ncdf4 nc_close ncvar_def ncvar_put ncatt_put ncdim_def
+#'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
 #'@importFrom sp SpatialLinesDataFrame polygons
 #'
 #'@export
-ToNCDFSG = function(nc_file, geomData = NULL, names = NULL, lats = NULL, lons = NULL,
-                    alts=NULL, multiPoint = NULL){
+ToNCDFSG = function(nc_file, geomData = NULL, names = NULL, lats = NULL, lons = NULL, alts=NULL){
 
   pointsMode <- FALSE
 

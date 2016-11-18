@@ -5,7 +5,7 @@
 \title{Convert sp objects to NetCDF}
 \usage{
 ToNCDFSG(nc_file, geomData = NULL, names = NULL, lats = NULL,
-  lons = NULL, alts = NULL, multiPoint = NULL)
+  lons = NULL, alts = NULL)
 }
 \arguments{
 \item{nc_file}{A string file path to the nc file to be created.}
