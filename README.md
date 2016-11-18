@@ -1,4 +1,5 @@
 # NetCDF-CF Simple Geometries R
+[![Build Status](https://travis-ci.org/dblodgett-usgs/NCDFSG.svg)](https://travis-ci.org/dblodgett-usgs/NCDFSG) [![Coverage Status](https://coveralls.io/repos/dblodgett-usgs/NCDFSG/badge.svg)](https://coveralls.io/r/dblodgett-usgs/NCDFSG)
 
 ## Reference Sources
 https://github.com/valcu/rangeMapper/blob/master/R/utils-spatial.R
