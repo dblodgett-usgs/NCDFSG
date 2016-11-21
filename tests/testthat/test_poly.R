@@ -19,6 +19,7 @@ test_that("polygon_timeSeries for basic polygon", {
   expect_equivalent(ncatt_get(nc,varid="instance_name","cf_role")$value,"timeseries_id")
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"geometry x node")
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"geometry y node")
+  expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")
 })
 
 test_that("polygon_timeSeries for polygon with a hole.", {
