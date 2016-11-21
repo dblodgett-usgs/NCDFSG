@@ -1,5 +1,18 @@
 library(ncdf4)
 
+compareSP <- function(polygonData, returnPolyData) {
+  expect_equal(length(polygonData@polygons[[1]]@Polygons), length(returnPolyData@polygons[[1]]@Polygons))
+  for(i in 1:length(length(polygonData@polygons[[1]]@Polygons))) {
+    expect_equal(as.numeric(returnPolyData@polygons[[1]]@Polygons[[i]]@coords),
+                 as.numeric(polygonData@polygons[[1]]@Polygons[[i]]@coords))
+    expect_equal(polygonData@polygons[[1]]@Polygons[[i]], returnPolyData@polygons[[1]]@Polygons[[i]])
+  }
+  expect_equal(polygonData@polygons[[1]]@area, returnPolyData@polygons[[1]]@area)
+  # expect_equal(polygonData@polygons[[1]]@plotOrder, returnPolyData@polygons[[1]]@plotOrder) # Don't want to worry about plot order right now.
+  expect_equal(polygonData@polygons[[1]]@labpt, returnPolyData@polygons[[1]]@labpt)
+  expect_equal(polygonData@polygons[[1]]@ID, returnPolyData@polygons[[1]]@ID)
+}
+
 context("NCDF SG polygon tests")
 
 test_that("polygon_timeSeries for basic polygon", {
@@ -21,6 +34,7 @@ test_that("polygon_timeSeries for basic polygon", {
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"geometry y node")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")
   returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
 })
 
 test_that("polygon_timeSeries for polygon with a hole.", {
@@ -33,6 +47,8 @@ test_that("polygon_timeSeries for polygon with a hole.", {
                  length(polygonData@polygons[[1]]@Polygons[[2]]@coords[,2]))+1)
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[6],-2) # manually verified this is right.
   expect_equal(length(nc$dim$coordinate_index$vals), 10)
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
 })
 
 test_that("polygon_timeSeries for multipolygon.", {
@@ -45,6 +61,8 @@ test_that("polygon_timeSeries for multipolygon.", {
                   length(polygonData@polygons[[1]]@Polygons[[2]]@coords[,2]))+1) # +1 for the extracoord.
   expect_equal(as.numeric(nc$dim$coordinate_index$vals)[5],-1)
   expect_equal(length(nc$dim$coordinate_index$vals), 10)
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
 })
 
 test_that("polygon_timeSeries for a multipolygon with a hole.", {
@@ -61,6 +79,12 @@ test_that("polygon_timeSeries for a multipolygon with a hole.", {
   expect_equal(length(nc$dim$coordinate_index$vals), as.numeric(ncvar_get(nc,'coordinate_index_stop')))
   expect_equal(length(ncvar_get(nc,"x")), (as.numeric(ncvar_get(nc,'coordinate_index_stop'))-2)) # Two for extracoords.
   expect_equal(length(ncvar_get(nc, "x")), nc$dim$coordinate_index$vals[ncvar_get(nc,'coordinate_index_stop')]) # Check indexes are clean.
+  returnPolyData<-FromNCDFSG(nc_file)
+  temp<-returnPolyData@polygons[[1]]@Polygons[[1]] # tidy re-orders things in addGeomData.R, not a problem except for tests?
+  # Not going to fix for now... should move away from tidy any ways. This test will break when we do.
+  returnPolyData@polygons[[1]]@Polygons[[1]]<-returnPolyData@polygons[[1]]@Polygons[[2]]
+  returnPolyData@polygons[[1]]@Polygons[[2]]<-temp
+  compareSP(polygonData, returnPolyData)
 })
 
 test_that("polygon_timeSeries for multipolygons with holes.", {
@@ -73,4 +97,6 @@ test_that("polygon_timeSeries for multipolygons with holes.", {
   expect_equal(length(nc$dim$coordinate_index$vals), as.numeric(ncvar_get(nc,'coordinate_index_stop')))
   expect_equal(length(ncvar_get(nc,"x")), (as.numeric(ncvar_get(nc,'coordinate_index_stop'))-5)) # Five for extracoords.
   expect_equal(length(ncvar_get(nc, "x")), nc$dim$coordinate_index$vals[ncvar_get(nc,'coordinate_index_stop')]) # Check indexes are clean.
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
 })

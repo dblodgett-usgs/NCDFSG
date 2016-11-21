@@ -59,24 +59,35 @@ FromNCDFSG = function(nc_file) {
     name <- instance_names[geom]
     stop_ind <- stop_inds[geom]
     ragged_inds <- ncvar_get(nc, coord_index_var, start_ind, (stop_ind-start_ind+1))
-    breaks <- sort(c(which(ragged_inds == hole_break_val), c(which(ragged_inds == multi_break_val))))
+    breaks <- sort(c(which(ragged_inds == hole_break_val), which(ragged_inds == multi_break_val)))
     multi_hole <- rep(FALSE, length(breaks))
     multi_hole[which(ragged_inds[breaks] == hole_break_val)] <- TRUE
-    extra_inds <- 0
     srl <- list()
     coords_start <- 1
-    for(part in 1:length(breaks)) {
-      coords_count <- breaks[part]-coords_start
-      coords <- matrix(c(ncvar_get(nc, node_data[1], coords_start, coords_count),
-                         (ncvar_get(nc, node_data[2], coords_start, coords_count))),ncol = 2) # Assuming canonical axis order here!!!
-      coords_start <- breaks[part]+1
-      srl <- append(srl, Polygon(coords, hole=multi_hole[part]))
+    hole<-FALSE # First is always a polygon, not a hole.
+    if(length(breaks) > 0) {
+      for(part in 1:length(breaks)) {
+        coords_count <- ragged_inds[breaks[part]-1]-coords_start
+        srl <- append(srl, getsrl(nc, node_data, coords_start, coords_count, hole))
+        coords_start <- ragged_inds[breaks[part]+1] # Increments to the next position where there is an index.
+        hole<-multi_hole[part] # Indicates that a hole is coming next.
+      }
     }
+    coords_count <- ragged_inds[stop_ind]-coords_start
+    srl <- append(srl, getsrl(nc, node_data, coords_start, coords_count, hole))
     Srl <- append(Srl, Polygons(srl, as.character(geom)))
   }
   SPolys <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
                                      as.data.frame(instance_names, stringsAsFactors = FALSE), match.ID = FALSE)
   return(SPolys)
+}
+
+getsrl <- function(nc, node_data, coords_start, coords_count, hole) {
+  coords <- matrix(c(ncvar_get(nc, node_data[1], coords_start, coords_count),
+                     (ncvar_get(nc, node_data[2], coords_start, coords_count))),ncol = 2) # Assuming canonical axis order here!!!
+  srl<-Polygon(coords, hole=hole)
+  dimnames(srl@coords) <- list(NULL, c("x", "y"))
+  return(srl)
 }
 
 findVarByAtt <- function(nc, attribute, value, strict=TRUE) {
