@@ -30,34 +30,34 @@ FromNCDFSG = function(nc_file) {
   geom_type <- ncatt_get(nc, coord_index_var, attname = "geom_type")$value
 
   if(grepl("multipolygon", geom_type)) {
-  stop_inds <- ncvar_get(nc, coord_index_stop_var)
-  instance_names <- ncvar_get(nc, instance_id)
-  start_ind <- 1
-  Srl <- list()
-  for(geom in 1:length(stop_inds)) {
-    name <- instance_names[geom]
-    stop_ind <- stop_inds[geom]
-    ragged_inds <- ncvar_get(nc, coord_index_var, start_ind, (stop_ind-start_ind+1))
-    breaks <- sort(c(which(ragged_inds == hole_break_val), which(ragged_inds == multi_break_val)))
-    multi_hole <- rep(FALSE, length(breaks))
-    multi_hole[which(ragged_inds[breaks] == hole_break_val)] <- TRUE
-    srl <- list()
-    coords_start <- 1
-    hole<-FALSE # First is always a polygon, not a hole.
-    if(length(breaks) > 0) {
-      for(part in 1:length(breaks)) {
-        coords_count <- ragged_inds[breaks[part]-1]-coords_start
-        srl <- append(srl, getsrl(nc, node_data, coords_start, coords_count, hole))
-        coords_start <- ragged_inds[breaks[part]+1] # Increments to the next position where there is an index.
-        hole<-multi_hole[part] # Indicates that a hole is coming next.
+    stop_inds <- ncvar_get(nc, coord_index_stop_var)
+    instance_names <- ncvar_get(nc, instance_id)
+    start_ind <- 1
+    Srl <- list()
+    for(geom in 1:length(stop_inds)) {
+      name <- instance_names[geom]
+      stop_ind <- stop_inds[geom]
+      ragged_inds <- ncvar_get(nc, coord_index_var, start_ind, (stop_ind-start_ind+1))
+      breaks <- sort(c(which(ragged_inds == hole_break_val), which(ragged_inds == multi_break_val)))
+      multi_hole <- rep(FALSE, length(breaks))
+      multi_hole[which(ragged_inds[breaks] == hole_break_val)] <- TRUE
+      srl <- list()
+      coords_start <- 1
+      hole<-FALSE # First is always a polygon, not a hole.
+      if(length(breaks) > 0) {
+        for(part in 1:length(breaks)) {
+          coords_count <- ragged_inds[breaks[part]-1]-coords_start
+          srl <- append(srl, getsrl(nc, node_data, coords_start, coords_count, hole))
+          coords_start <- ragged_inds[breaks[part]+1] # Increments to the next position where there is an index.
+          hole<-multi_hole[part] # Indicates that a hole is coming next.
+        }
       }
+      coords_count <- ragged_inds[stop_ind]-coords_start
+      srl <- append(srl, getsrl(nc, node_data, coords_start, coords_count, hole))
+      Srl <- append(Srl, Polygons(srl, as.character(geom)))
     }
-    coords_count <- ragged_inds[stop_ind]-coords_start
-    srl <- append(srl, getsrl(nc, node_data, coords_start, coords_count, hole))
-    Srl <- append(Srl, Polygons(srl, as.character(geom)))
-  }
-  SPolys <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
-                                     as.data.frame(instance_names, stringsAsFactors = FALSE), match.ID = FALSE)
+    SPolys <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
+                                       as.data.frame(instance_names, stringsAsFactors = FALSE), match.ID = FALSE)
   }
   return(SPolys)
 }
