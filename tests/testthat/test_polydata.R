@@ -30,4 +30,6 @@ test_that("A whole shapefile can be written", {
                sum(ncvar_get(nc, varid = "x", start = c(start), count = c((holeStarts[1]-start)))))
   expect_equal(sum(as.numeric(yaharaData@polygons[[polyid]]@Polygons[[2]]@coords[,1])),
                sum(ncvar_get(nc, varid = "x", start = holeStart, count = c((holeStop-holeStart)))))
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(yaharaData, returnPolyData)
 })

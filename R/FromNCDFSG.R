@@ -28,14 +28,12 @@ FromNCDFSG = function(nc_file) {
   node_data <- strsplit(ncatt_get(nc, coord_index_var, attname = "geom_coordinates")$value, " ")[[1]]
 
   geom_type <- ncatt_get(nc, coord_index_var, attname = "geom_type")$value
-
   if(grepl("multipolygon", geom_type)) {
     stop_inds <- ncvar_get(nc, coord_index_stop_var)
     instance_names <- ncvar_get(nc, instance_id)
     start_ind <- 1
     Srl <- list()
     for(geom in 1:length(stop_inds)) {
-      name <- instance_names[geom]
       stop_ind <- stop_inds[geom]
       ragged_inds <- ncvar_get(nc, coord_index_var, start_ind, (stop_ind-start_ind+1))
       breaks <- sort(c(which(ragged_inds == hole_break_val), which(ragged_inds == multi_break_val)))
@@ -56,8 +54,20 @@ FromNCDFSG = function(nc_file) {
       srl <- append(srl, getsrl(nc, node_data, coords_start, coords_count, hole))
       Srl <- append(Srl, Polygons(srl, as.character(geom)))
     }
+    dataFrame <- as.data.frame(list(id=1:nc$var[coord_index_stop_var][[1]]$dim[[1]]$len))
+
+    for(var in nc$var) {
+      if(var$ndims==1 && grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) &&
+         !grepl(var$name, paste0("^",coord_index_stop_var,"$"))) {
+        dataFrame[var$name] <- ncvar_get(nc, var$name)
+      } else if(grepl(var$prec, paste0("^char$")) &&
+                (grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) ||
+                 grepl(var$dim[[2]]$name,paste0("^",instance_id,"$"))))
+        dataFrame[var$name] <- ncvar_get(nc, var$name)
+    }
+
     SPolys <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
-                                       as.data.frame(instance_names, stringsAsFactors = FALSE), match.ID = FALSE)
+                                       dataFrame, match.ID = FALSE)
   }
   return(SPolys)
 }
