@@ -14,43 +14,22 @@
 #'
 #'@export
 FromNCDFSG = function(nc_file) {
+
   nc <- nc_open(nc_file)
 
-  # Check important global atts
-  if(!grepl('CF',ncatt_get(nc,0,'Conventions')$value)) {
-    warning('File does not advertise CF conventions, unexpected behavior may result.')}
+  checkVals <- checkNCDF(nc)
 
-  # Look for variable with the timeseries_id in it.
-  instance_id<-unlist(findVarByAtt(nc, 'cf_role', 'timeseries_id'))
-  if(is.null(instance_id)) { stop('A timeseries id variable was not found in the file.') }
+  instance_id<-checkVals$instance_id
+  coord_index_var<-checkVals$coord_index_var
+  coord_index_stop_var<-checkVals$coord_index_stop_var
+  multi_break_val<-checkVals$multi_break_val
+  hole_break_val<-checkVals$hole_break_val
 
-  # Look for 'geom_coordinates' that match variable names.
-  coord_index_var<-list()
-  for(var in c(names(nc$var), names(nc$dim))) { # need to come back to handle coordinate variables named the same as the dimension.
-    coord_index_var<-append(coord_index_var, findVarByAtt(nc, "geom_coordinates", var, strict=FALSE))
-  }
-  coord_index_var<-unique(coord_index_var)[[1]]
+  node_data <- strsplit(ncatt_get(nc, coord_index_var, attname = "geom_coordinates")$value, " ")[[1]]
 
-  if(length(coord_index_var)>1) {stop('only one geom_coordinates index is supported, this file has more than one.')}
+  geom_type <- ncatt_get(nc, coord_index_var, attname = "geom_type")$value
 
-  node_data <- strsplit(ncatt_get(nc, coord_index_var[[1]], attname = "geom_coordinates")$value, " ")[[1]]
-
-  if(length(coord_index_var)==0) { stop('No geometry coordinates were found in the file.') }
-
-  coord_index_stop_var<-list()
-  for(dimen in c(names(nc$dim))) {
-    coord_index_stop_var <- append(coord_index_stop_var, findVarByAtt(nc, "contiguous_ragged_dimension", dimen))
-  }
-  coord_index_stop_var <- unique(coord_index_stop_var)[[1]]
-
-  if(length(coord_index_stop_var)>1) {stop('only one contiquous ragged dimension index is supported, this file has more than one.')}
-
-  if(grepl(ncatt_get(nc, coord_index_var, 'geom_type')$value,'^multipolygon$')) {
-    multi_break_val <- ncatt_get(nc, coord_index_var, 'multipart_break_value')$value
-    hole_break_val <- ncatt_get(nc, coord_index_var, 'hole_break_value')$value
-    # Could also implement outer_ring_order and closure convention.
-  }
-
+  if(grepl("multipolygon", geom_type)) {
   stop_inds <- ncvar_get(nc, coord_index_stop_var)
   instance_names <- ncvar_get(nc, instance_id)
   start_ind <- 1
@@ -79,6 +58,7 @@ FromNCDFSG = function(nc_file) {
   }
   SPolys <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
                                      as.data.frame(instance_names, stringsAsFactors = FALSE), match.ID = FALSE)
+  }
   return(SPolys)
 }
 
@@ -102,3 +82,42 @@ findVarByAtt <- function(nc, attribute, value, strict=TRUE) {
   return(foundVar)
 }
 
+checkNCDF <- function(nc) {
+  # Check important global atts
+  if(!grepl('CF',ncatt_get(nc,0,'Conventions')$value)) {
+    warning('File does not advertise CF conventions, unexpected behavior may result.')}
+
+  # Look for variable with the timeseries_id in it.
+  instance_id<-unlist(findVarByAtt(nc, 'cf_role', 'timeseries_id'))
+  if(is.null(instance_id)) { stop('A timeseries id variable was not found in the file.') }
+
+  # Look for 'geom_coordinates' that match variable names.
+  coord_index_var<-list()
+  for(var in c(names(nc$var), names(nc$dim))) { # need to come back to handle coordinate variables named the same as the dimension.
+    coord_index_var<-append(coord_index_var, findVarByAtt(nc, "geom_coordinates", var, strict=FALSE))
+  }
+  coord_index_var<-unique(coord_index_var)[[1]]
+
+  if(length(coord_index_var)>1) {stop('only one geom_coordinates index is supported, this file has more than one.')}
+
+  if(length(coord_index_var)==0) { stop('No geometry coordinates were found in the file.') }
+
+  coord_index_stop_var<-list()
+  for(dimen in c(names(nc$dim))) {
+    coord_index_stop_var <- append(coord_index_stop_var, findVarByAtt(nc, "contiguous_ragged_dimension", dimen))
+  }
+  coord_index_stop_var <- unique(coord_index_stop_var)[[1]]
+
+  if(length(coord_index_stop_var)>1) {stop('only one contiquous ragged dimension index is supported, this file has more than one.')}
+
+  if(grepl(ncatt_get(nc, coord_index_var, 'geom_type')$value,'^multipolygon$')) {
+    multi_break_val <- ncatt_get(nc, coord_index_var, 'multipart_break_value')$value
+    hole_break_val <- ncatt_get(nc, coord_index_var, 'hole_break_value')$value
+    # Could also implement outer_ring_order and closure convention.
+  }
+  return(list(instance_id=instance_id,
+              coord_index_var=coord_index_var,
+              coord_index_stop_var=coord_index_stop_var,
+              multi_break_val=multi_break_val,
+              hole_break_val=hole_break_val))
+}
