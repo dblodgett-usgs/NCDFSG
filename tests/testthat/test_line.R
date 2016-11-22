@@ -1,5 +1,15 @@
 library(ncdf4)
 
+compareSL <- function(lineData, returnLineData) {
+  expect_equal(length(lineData@lines[[1]]@Lines), length(returnLineData@lines[[1]]@Lines))
+  for(i in 1:length(length(lineData@lines[[1]]@Lines))) {
+    expect_equal(as.numeric(returnLineData@lines[[1]]@Lines[[i]]@coords),
+                 as.numeric(lineData@lines[[1]]@Lines[[i]]@coords))
+    # expect_equal(lineData@lines[[1]]@Lines[[i]], returnLineData@lines[[1]]@Lines[[i]]) # checks attributes, not sure it's work testing them.
+  }
+  # expect_equal(lineData@lines[[1]]@ID, returnLineData@lines[[1]]@ID) # maptools 0 indexes others 1 index. Not roundtripping this yet.
+}
+
 context("NCDF SG line tests")
 
 test_that("linedata works", {
@@ -17,7 +27,7 @@ test_that("linedata works", {
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"geometry y node")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")
   returnLineData<-FromNCDFSG(nc_file)
-  expect_equal(lineData@lines[[1]]@Lines[[1]]@coords, returnLineData@lines[[1]]@Lines[[1]]@coords)
+  compareSL(lineData, returnLineData)
 })
 
 test_that("multiLine data works", {
@@ -37,6 +47,8 @@ test_that("multiLine data works", {
   expect_equal(secondMultiCount, length(lineData@lines[[1]]@Lines[[2]]@coords[,1]))
   expect_equal(sum(lineData@lines[[1]]@Lines[[2]]@coords[,1]),
                sum(ncvar_get(nc,nc$var$x,start = secondMultiStart, count = secondMultiCount)))
+  returnLineData<-FromNCDFSG(nc_file)
+  compareSL(lineData, returnLineData)
 })
 
 test_that("multiline data frame works", {
@@ -46,4 +58,6 @@ test_that("multiline data frame works", {
   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData, names = as.character(lineData@data$name))
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
+  returnLineData<-FromNCDFSG(nc_file)
+  compareSL(lineData, returnLineData)
 })

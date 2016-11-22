@@ -42,7 +42,7 @@ FromNCDFSG = function(nc_file) {
 
     for(geom in 1:length(stop_inds)) {
       stop_ind <- stop_inds[geom]
-      ragged_inds <- ragged_ind_var[start_ind:(stop_ind+1)]
+      ragged_inds <- ragged_ind_var[start_ind:stop_ind]
       breaks <- sort(c(which(ragged_inds == hole_break_val), which(ragged_inds == multi_break_val)))
       multi_hole <- rep(FALSE, length(breaks))
       multi_hole[which(ragged_inds[breaks] == hole_break_val)] <- TRUE
@@ -51,7 +51,7 @@ FromNCDFSG = function(nc_file) {
       hole<-FALSE # First is always a polygon, not a hole?
       if(length(breaks) > 0) {
         for(part in 1:length(breaks)) {
-          coords_count <- ragged_inds[breaks[part]-1]-coords_start
+          coords_count <- ragged_inds[breaks[part]-1] - coords_start + 1
           if(poly) {
             srl <- append(srl, getPolysrl(nc, node_data, coords_start, coords_count, hole))
           } else if(line) {
@@ -62,7 +62,7 @@ FromNCDFSG = function(nc_file) {
         }
       }
       coords_count <- ragged_inds[stop_ind]-coords_start+1
-      if(poly) {
+      if(poly) { # This could be refactored along with the two functions declared below (getPolysrl and getLinesrl)
         srl <- append(srl, getPolysrl(nc, node_data, coords_start, coords_count, hole))
         Srl <- append(Srl, Polygons(srl, as.character(geom)))
       }  else if(line) {
@@ -70,6 +70,7 @@ FromNCDFSG = function(nc_file) {
         Srl <- append(Srl, Lines(srl, as.character(geom)))
       }
     }
+
     dataFrame <- as.data.frame(list(id=1:nc$var[coord_index_stop_var][[1]]$dim[[1]]$len))
 
     for(var in nc$var) {
@@ -155,11 +156,10 @@ checkNCDF <- function(nc) {
 
   if(length(coord_index_stop_var)>1) {stop('only one contiquous ragged dimension index is supported, this file has more than one.')}
 
-  if(grepl(ncatt_get(nc, coord_index_var, 'geom_type')$value,'^multipolygon$')) {
-    try(multi_break_val <- ncatt_get(nc, coord_index_var, 'multipart_break_value')$value)
-    try(hole_break_val <- ncatt_get(nc, coord_index_var, 'hole_break_value')$value)
-    # Could also implement outer_ring_order and closure convention.
-  }
+  try(multi_break_val <- ncatt_get(nc, coord_index_var, 'multipart_break_value')$value)
+  try(hole_break_val <- ncatt_get(nc, coord_index_var, 'hole_break_value')$value)
+  # Could also implement outer_ring_order and closure convention.
+
   return(list(instance_id=instance_id,
               coord_index_var=coord_index_var,
               coord_index_stop_var=coord_index_stop_var,
