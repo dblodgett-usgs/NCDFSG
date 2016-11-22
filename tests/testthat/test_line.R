@@ -16,6 +16,8 @@ test_that("linedata works", {
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"geometry x node")
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"geometry y node")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")
+  returnLineData<-FromNCDFSG(nc_file)
+  expect_equal(lineData@lines[[1]]@Lines[[1]]@coords, returnLineData@lines[[1]]@Lines[[1]]@coords)
 })
 
 test_that("multiLine data works", {

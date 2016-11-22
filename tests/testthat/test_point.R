@@ -73,4 +73,5 @@ test_that("shapefile_point", {
   expect_equal(sum(ncvar_get(nc, nc$var$lat)), sum(pointData@coords[,2]))
   expect_equal(sum(ncvar_get(nc, nc$var$lon)), sum(pointData@coords[,1]))
   expect_equal(as.character(ncvar_get(nc, nc$var$site_no)), pointData@data$site_no)
+  expect_equal(as.numeric(ncvar_get(nc, nc$var$drain_area)), pointData@data$drain_area)
 })
