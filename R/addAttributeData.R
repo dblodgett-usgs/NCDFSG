@@ -25,10 +25,24 @@ addInstanceData <- function(nc_file, names, attData = NULL) {
   vars<-list()
 
   types<-list(numeric="double", integer = "integer", character="char")
+
   if(!is.null(attData)) {
     for(colName in names(attData)) {
-      vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = instance_dim,
-                                   prec = types[[class(attData[colName][[1]])]])))
+      if(grepl(class(attData[colName][[1]]), "character")) {
+        charDimLen<-max(sapply(attData[colName][[1]], nchar))
+      }
+    }
+    if(exists("charDimLen")) {
+      char_dim = ncdim_def('char', '', 1:charDimLen, create_dimvar=FALSE)
+    }
+    for(colName in names(attData)) {
+      if(grepl(class(attData[colName][[1]]), "character")) {
+        vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = list(char_dim, instance_dim),
+                                     prec = types[[class(attData[colName][[1]])]])))
+      } else {
+        vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = instance_dim,
+                                     prec = types[[class(attData[colName][[1]])]])))
+      }
     }
   }
 

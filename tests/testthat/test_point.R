@@ -72,4 +72,5 @@ test_that("shapefile_point", {
   expect_equal(length(ncvar_get(nc, nc$var$lon)), length(pointData@coords[,1]))
   expect_equal(sum(ncvar_get(nc, nc$var$lat)), sum(pointData@coords[,2]))
   expect_equal(sum(ncvar_get(nc, nc$var$lon)), sum(pointData@coords[,1]))
+  expect_equal(as.character(ncvar_get(nc, nc$var$site_no)), pointData@data$site_no)
 })
