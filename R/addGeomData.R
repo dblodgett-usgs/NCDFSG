@@ -46,7 +46,7 @@ addGeomData<-function(nc_file, geomData, names) {
 
     id_finder<-function(i, d) {max(which(d==i))} # Finds the last index of the value i.
     # coordinate_index_stop_vals are where each polygon stops in the coordinates.
-    coordinate_index_stop_vals <- sapply(ids, id_finder, d = geomData$id, USE.NAMES = FALSE)
+    ragged_index_stop_vals <- sapply(ids, id_finder, d = geomData$id, USE.NAMES = FALSE)
 
   } else {
     # for each id, the piece field increments by one for each piece of the geometry same for holes and multipoly.
@@ -83,6 +83,10 @@ addGeomData<-function(nc_file, geomData, names) {
     id_finder2<-function(i, d, s) {which(s == max(which(d==i)))}
     # coordinate_index_stop_vals are where each polygon stops in the coordinates.
     coordinate_index_stop_vals <- sapply(ids, id_finder2, d = geomData$id,s=ragged_ind, USE.NAMES = FALSE)
+    if(length(coordinate_index_stop_vals)>1) {
+      ragged_index_stop_vals<-c(which(ragged_ind %in% coordinate_index_stop_vals),length(ragged_ind))
+    } else { ragged_index_stop_vals <- length(ragged_ind) }
+
   }
 
   coord_dim<-ncdim_def('coordinates', '', 1:length(geomData$long), create_dimvar=FALSE)
@@ -108,7 +112,7 @@ addGeomData<-function(nc_file, geomData, names) {
   ncvar_put(nc = nc, varid = 'x', vals = xVals)
   ncvar_put(nc = nc, varid = 'y', vals = yVals)
   ncvar_put(nc = nc, varid = 'coordinate_index', vals = ragged_ind)
-  ncvar_put(nc = nc, varid = 'coordinate_index_stop', vals = coordinate_index_stop_vals)
+  ncvar_put(nc = nc, varid = 'coordinate_index_stop', vals = ragged_index_stop_vals)
 
   ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'geometry x node')
   ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'geometry y node')
