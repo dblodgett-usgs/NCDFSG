@@ -1,6 +1,6 @@
 library("ncdf4")
 
-context("NCDF SG polydata shape tests")
+context("NCDF SG polygonData tests")
 
 # data prep.
 # library(maptools)

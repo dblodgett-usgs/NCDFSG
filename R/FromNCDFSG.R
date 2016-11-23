@@ -101,14 +101,20 @@ getDF <- function(nc, instance_id, instance_var) {
   for(var in nc$var) {
     if(var$ndims==1 && grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) &&
        !grepl(var$name, paste0("^",instance_var,"$"))) {
-      dataFrame[var$name] <- ncvar_get(nc, var$name)
+      dataFrame[var$name] <- c(ncvar_get(nc, var$name))
     } else if(grepl(var$prec, paste0("^char$")) &&
               (grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) ||
                grepl(var$dim[[2]]$name,paste0("^",instance_id,"$"))))
-      dataFrame[var$name] <- ncvar_get(nc, var$name)
+      dataFrame[var$name] <- c(ncvar_get(nc, var$name))
   }
+  dataFrame[] <- lapply(dataFrame, make.true.NA)
   return(dataFrame)
 }
+
+# found here: http://stackoverflow.com/questions/26220913/replace-na-with-na
+make.true.NA <- function(x) if(is.character(x)||is.factor(x)){
+  is.na(x) <- x=="NA"; x} else {
+    x}
 
 getLinesrl <- function(nc, node_data, coords_start, coords_count) {
   coords <- matrix(c(ncvar_get(nc, node_data[1], coords_start, coords_count),

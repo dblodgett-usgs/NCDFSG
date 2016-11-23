@@ -34,7 +34,6 @@ ToNCDFSG = function(nc_file, geomData = NULL, names = NULL, lats = NULL, lons = 
     geomData<-polygons(geomData)
   } else if(class(geomData) == "SpatialLinesDataFrame") {
     attData<-geomData@data
-    geomData<-SpatialLinesDataFrame(geomData,data=as.data.frame(names,stringsAsFactors = FALSE))
   } else if(class(geomData) == "SpatialPolygons") {
     geomData<-polygons(geomData)
   } else if(class(geomData) == "SpatialLines") {

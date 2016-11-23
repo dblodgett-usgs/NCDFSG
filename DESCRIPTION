@@ -4,7 +4,8 @@ Title: NetCDF-CF Simple Geometries
 Imports:
   ncdf4,
   broom,
-  sp
+  sp,
+  methods
 Depends:
   R (>= 3.0)
 Suggests:

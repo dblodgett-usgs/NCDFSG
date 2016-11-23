@@ -13,9 +13,14 @@
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
 #'
 #'@importFrom ncdf4 nc_open ncvar_add nc_create nc_close ncvar_def ncvar_put ncdim_def
+#'@importFrom methods is
 #'
 #'@export
 addInstanceData <- function(nc_file, names, attData = NULL) {
+
+  i <- sapply(attData, is, class2 = "Date")
+  attData[i] <- lapply(attData[i], as.character)
+
   n <- length(names)
   # 'instance' is used to be consistent with the CF specification which calls the geometries, or features, instances.
   instance_dim = ncdim_def('instance', '', 1:n, create_dimvar=FALSE)
@@ -27,21 +32,25 @@ addInstanceData <- function(nc_file, names, attData = NULL) {
   types<-list(numeric="double", integer = "integer", character="char")
 
   if(!is.null(attData)) {
+    charDimLen<-0
     for(colName in names(attData)) {
       if(grepl(class(attData[colName][[1]]), "character")) {
-        charDimLen<-max(sapply(attData[colName][[1]], nchar))
+        charDimLen<-max(sapply(attData[colName][[1]], nchar, keepNA=FALSE), charDimLen)
       }
     }
-    if(exists("charDimLen")) {
+    if(charDimLen>0) {
       char_dim = ncdim_def('char', '', 1:charDimLen, create_dimvar=FALSE)
     }
     for(colName in names(attData)) {
       if(grepl(class(attData[colName][[1]]), "character")) {
         vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = list(char_dim, instance_dim),
                                      prec = types[[class(attData[colName][[1]])]])))
+      } else if(grepl(class(attData[colName][[1]]), "integer")) {
+        vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = instance_dim,
+                                     prec = types[[class(attData[colName][[1]])]], missval = -9999)))
       } else {
         vars<-c(vars, list(ncvar_def(name=colName, units = "unknown", dim = instance_dim,
-                                     prec = types[[class(attData[colName][[1]])]])))
+                                     prec = types[[class(attData[colName][[1]])]], missval = NA)))
       }
     }
   }
