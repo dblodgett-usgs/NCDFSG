@@ -39,10 +39,10 @@ addGeomData<-function(nc_file, geomData, names) {
   coordinate_index_len <- length(geomData$long) + length(levels(geomData$group)) - n
 
   # Will contain order and mutlipolygon/hole break values.
-  coordinate_index_vals <- 1:coordinate_index_len
+  ragged_ind <- 1:coordinate_index_len
 
   if(coordinate_index_len==length(geomData$long)) { # If there are no multiGeometries or holes.
-    coordinate_index_vals <- 1:coordinate_index_len
+    ragged_ind <- 1:coordinate_index_len
 
     id_finder<-function(i, d) {max(which(d==i))} # Finds the last index of the value i.
     # coordinate_index_stop_vals are where each polygon stops in the coordinates.
@@ -50,39 +50,39 @@ addGeomData<-function(nc_file, geomData, names) {
 
   } else {
     # for each id, the piece field increments by one for each piece of the geometry same for holes and multipoly.
-    coordinate_index_break_vals <- which(diff(as.numeric(geomData$piece))==1)
+    coord_breaks <- which(diff(as.numeric(geomData$piece))==1)
     # variable to track the number of hole values.
-    extraCoord<-0
-    # location to start inserting into the coord_index_vals vector
-    startCoord<-1
+    extra_ind<-0
+    # location to start inserting into the ragged_ind vector
+    start_ind<-1
     # location to start pulling from the geomData.
-    startInd<-1
-    for(cInd in 1:length(coordinate_index_break_vals)) {
-      cIndVal<-coordinate_index_break_vals[cInd] # convenience
+    start_coord<-1
+    for(i in 1:length(coord_breaks)) {
+      stop_coord<-coord_breaks[i] # convenience
       # Put the coordinate index data in place.
-      coordinate_index_vals[startCoord:(cIndVal+extraCoord)] <- startInd:cIndVal
-      # increment the extraCoord.
-      extraCoord <- extraCoord + 1
+      ragged_ind[start_ind:(stop_coord+extra_ind)] <- start_coord:stop_coord
+      # increment the extra_ind.
+      extra_ind <- extra_ind + 1
       if(linesMode) {
-        coordinate_index_vals[cIndVal+extraCoord] <- multi_break_val
+        ragged_ind[stop_coord+extra_ind] <- multi_break_val
       } else {
-        if(geomData$hole[cIndVal+1]) {
-          coordinate_index_vals[cIndVal+extraCoord] <- hole_break_val
+        if(geomData$hole[stop_coord+1]) {
+          ragged_ind[stop_coord+extra_ind] <- hole_break_val
         } else {
-          coordinate_index_vals[cIndVal+extraCoord] <- multi_break_val
+          ragged_ind[stop_coord+extra_ind] <- multi_break_val
         }
       }
       # Increment start positions.
-      startInd <- cIndVal+1
-      startCoord <- cIndVal + extraCoord + 1
+      start_coord <- stop_coord + 1
+      start_ind <- stop_coord + extra_ind + 1
     }
     # Last set of normal polygons.
-    coordinate_index_vals[startCoord:(length(geomData$order) + extraCoord)] <- startInd:length(geomData$order)
+    ragged_ind[start_ind:(length(geomData$order) + extra_ind)] <- start_coord:length(geomData$order)
 
     # Finds the last index of the value i this time returning the index into the coordinate_index which includes extraCoords.
     id_finder2<-function(i, d, s) {which(s == max(which(d==i)))}
     # coordinate_index_stop_vals are where each polygon stops in the coordinates.
-    coordinate_index_stop_vals <- sapply(ids, id_finder2, d = geomData$id,s=coordinate_index_vals, USE.NAMES = FALSE)
+    coordinate_index_stop_vals <- sapply(ids, id_finder2, d = geomData$id,s=ragged_ind, USE.NAMES = FALSE)
   }
 
   coord_dim<-ncdim_def('coordinates', '', 1:length(geomData$long), create_dimvar=FALSE)
@@ -107,7 +107,7 @@ addGeomData<-function(nc_file, geomData, names) {
   nc <- ncvar_add(nc,yVar)
   ncvar_put(nc = nc, varid = 'x', vals = xVals)
   ncvar_put(nc = nc, varid = 'y', vals = yVals)
-  ncvar_put(nc = nc, varid = 'coordinate_index', vals = coordinate_index_vals)
+  ncvar_put(nc = nc, varid = 'coordinate_index', vals = ragged_ind)
   ncvar_put(nc = nc, varid = 'coordinate_index_stop', vals = coordinate_index_stop_vals)
 
   ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'geometry x node')
