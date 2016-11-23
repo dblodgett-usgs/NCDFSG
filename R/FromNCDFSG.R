@@ -24,15 +24,17 @@ FromNCDFSG = function(nc_file) {
   coord_index_stop_var<-checkVals$coord_index_stop_var
   multi_break_val<-checkVals$multi_break_val
   hole_break_val<-checkVals$hole_break_val
-
-  node_data <- strsplit(ncatt_get(nc, coord_index_var, attname = "geom_coordinates")$value, " ")[[1]]
-
-  geom_type <- ncatt_get(nc, coord_index_var, attname = "geom_type")$value
+  geom_type<-checkVals$geom_type
 
   line<-FALSE; poly<-FALSE; point<-FALSE
   if(grepl("multipolygon", geom_type)) { poly<-TRUE
   } else if(grepl("multiline", geom_type)) { line<-TRUE
   } else point <- TRUE
+
+  if(point) {
+
+  } else {
+  node_data <- strsplit(ncatt_get(nc, coord_index_var, attname = "geom_coordinates")$value, " ")[[1]]
 
   stop_inds <- ncvar_get(nc, coord_index_stop_var)
   instance_names <- ncvar_get(nc, instance_id)
@@ -89,7 +91,7 @@ FromNCDFSG = function(nc_file) {
     SPGeom <- SpatialLinesDataFrame(SpatialLines(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
                                     dataFrame, match.ID = FALSE)
   }
-
+}
   return(SPGeom)
 }
 
@@ -137,6 +139,10 @@ checkNCDF <- function(nc) {
   instance_id<-unlist(findVarByAtt(nc, 'cf_role', 'timeseries_id'))
   if(is.null(instance_id)) { stop('A timeseries id variable was not found in the file.') }
 
+  geom_type<-NULL
+  geom_type <- try(ncatt_get(nc, coord_index_var, attname = "geom_type")$value)
+
+  if(grepl("multipolygon", geom_type) || grepl("multiline", geom_type)) {
   # Look for 'geom_coordinates' that match variable names.
   coord_index_var<-list()
   for(var in c(names(nc$var), names(nc$dim))) { # need to come back to handle coordinate variables named the same as the dimension.
@@ -146,7 +152,8 @@ checkNCDF <- function(nc) {
 
   if(length(coord_index_var)>1) {stop('only one geom_coordinates index is supported, this file has more than one.')}
 
-  if(length(coord_index_var)==0) { stop('No geometry coordinates were found in the file.') }
+  if(length(coord_index_var)==0) {
+    stop('No geometry coordinates were found in the file but required for geometry.') }
 
   coord_index_stop_var<-list()
   for(dimen in c(names(nc$dim))) {
@@ -159,10 +166,12 @@ checkNCDF <- function(nc) {
   try(multi_break_val <- ncatt_get(nc, coord_index_var, 'multipart_break_value')$value)
   try(hole_break_val <- ncatt_get(nc, coord_index_var, 'hole_break_value')$value)
   # Could also implement outer_ring_order and closure convention.
+  }
 
   return(list(instance_id=instance_id,
               coord_index_var=coord_index_var,
               coord_index_stop_var=coord_index_stop_var,
               multi_break_val=multi_break_val,
-              hole_break_val=hole_break_val))
+              hole_break_val=hole_break_val,
+              geom_type=geom_type))
 }

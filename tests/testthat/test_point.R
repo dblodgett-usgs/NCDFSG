@@ -23,6 +23,7 @@ test_that("Point_timeSeries", {
   expect_equivalent(ncatt_get(nc,varid="instance_name","cf_role")$value,"timeseries_id")
   expect_equivalent(ncatt_get(nc,varid="lat","standard_name")$value,"latitude")
   expect_equivalent(ncatt_get(nc,varid="lon","standard_name")$value,"longitude")
+  returnPointData<-FromNCDFSG(nc_file)
 })
 
 test_that("multiPoint_timeSeries", {
