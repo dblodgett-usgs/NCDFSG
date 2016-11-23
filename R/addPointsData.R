@@ -48,6 +48,8 @@ addPoints<-function(nc_file,xCoords,yCoords,alts=NULL) {
 
   ncatt_put(nc, 'instance_name', 'cf_role', 'timeseries_id')
   ncatt_put(nc, 'instance_name','standard_name','station_id')
+  ncatt_put(nc, 'instance_name','coordinates','lon lat')
+
 
   #Important Global Variables
   ncatt_put(nc, 0,'Conventions','CF-1.7')

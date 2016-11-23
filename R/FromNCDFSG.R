@@ -10,7 +10,7 @@
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
 #'
 #'@importFrom ncdf4 nc_open nc_close ncvar_get ncatt_get
-#'@importFrom sp Polygon Polygons SpatialPolygons SpatialPolygonsDataFrame CRS Line Lines SpatialLines SpatialLinesDataFrame
+#'@importFrom sp Polygon Polygons SpatialPolygons SpatialPolygonsDataFrame CRS Line Lines SpatialLines SpatialLinesDataFrame SpatialPointsDataFrame
 #'
 #'@export
 FromNCDFSG = function(nc_file) {
@@ -32,6 +32,16 @@ FromNCDFSG = function(nc_file) {
   } else point <- TRUE
 
   if(point) {
+    point_data_var <- strsplit(ncatt_get(nc, coord_index_var, attname = "coordinates")$value, " ")[[1]]
+
+    point_data <- matrix(c(ncvar_get(nc, point_data_var[1]),
+                           ncvar_get(nc, point_data_var[2])), ncol=2)
+
+    dataFrame <- getDF(nc, instance_id, point_data_var)
+
+    SPGeom <- SpatialPointsDataFrame(point_data, proj4string = CRS("+proj=longlat +datum=WGS84"),
+                                     data = dataFrame, match.ID = FALSE)
+
 
   } else {
     node_data <- strsplit(ncatt_get(nc, coord_index_var, attname = "geom_coordinates")$value, " ")[[1]]
@@ -73,17 +83,8 @@ FromNCDFSG = function(nc_file) {
       }
     }
 
-    dataFrame <- as.data.frame(list(id=1:nc$var[coord_index_stop_var][[1]]$dim[[1]]$len))
+    dataFrame <- getDF(nc, instance_id, coord_index_stop_var)
 
-    for(var in nc$var) {
-      if(var$ndims==1 && grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) &&
-         !grepl(var$name, paste0("^",coord_index_stop_var,"$"))) {
-        dataFrame[var$name] <- ncvar_get(nc, var$name)
-      } else if(grepl(var$prec, paste0("^char$")) &&
-                (grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) ||
-                 grepl(var$dim[[2]]$name,paste0("^",instance_id,"$"))))
-        dataFrame[var$name] <- ncvar_get(nc, var$name)
-    }
     if(poly) {
       SPGeom <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
                                          dataFrame, match.ID = FALSE)
@@ -93,6 +94,20 @@ FromNCDFSG = function(nc_file) {
     }
   }
   return(SPGeom)
+}
+
+getDF <- function(nc, instance_id, instance_var) {
+  dataFrame <- as.data.frame(list(id=1:nc$var[instance_var][[1]]$dim[[1]]$len))
+  for(var in nc$var) {
+    if(var$ndims==1 && grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) &&
+       !grepl(var$name, paste0("^",instance_var,"$"))) {
+      dataFrame[var$name] <- ncvar_get(nc, var$name)
+    } else if(grepl(var$prec, paste0("^char$")) &&
+              (grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) ||
+               grepl(var$dim[[2]]$name,paste0("^",instance_id,"$"))))
+      dataFrame[var$name] <- ncvar_get(nc, var$name)
+  }
+  return(dataFrame)
 }
 
 getLinesrl <- function(nc, node_data, coords_start, coords_count) {
@@ -131,6 +146,9 @@ checkNCDF <- function(nc) {
   multi_break_val<-NULL
   hole_break_val<-NULL
 
+  # Assume geom_type is point
+  geom_type<-"point"
+
   # Check important global atts
   if(!grepl('CF',ncatt_get(nc,0,'Conventions')$value)) {
     warning('File does not advertise CF conventions, unexpected behavior may result.')}
@@ -139,17 +157,26 @@ checkNCDF <- function(nc) {
   instance_id<-unlist(findVarByAtt(nc, 'cf_role', 'timeseries_id'))
   if(is.null(instance_id)) { stop('A timeseries id variable was not found in the file.') }
 
-  geom_type<-NULL
-  geom_type <- try(ncatt_get(nc, coord_index_var, attname = "geom_type")$value)
+  # Look for 'geom_coordinates' that match variable names.
+  coord_index_var<-list()
+  for(var in c(names(nc$var), names(nc$dim))) { # need to come back to handle coordinate variables named the same as the dimension.
+    coord_index_var<-append(coord_index_var, findVarByAtt(nc, "geom_coordinates", var, strict=FALSE))
+  }
 
-  if(grepl("multipolygon", geom_type) || grepl("multiline", geom_type)) {
-    # Look for 'geom_coordinates' that match variable names.
+  if(length(coord_index_var)>0) {
+    coord_index_var<-unique(coord_index_var)[[1]]
+    geom_type <- ncatt_get(nc, coord_index_var, attname = "geom_type")$value
+  }
+
+  if(grepl("point", geom_type)) {
     coord_index_var<-list()
     for(var in c(names(nc$var), names(nc$dim))) { # need to come back to handle coordinate variables named the same as the dimension.
-      coord_index_var<-append(coord_index_var, findVarByAtt(nc, "geom_coordinates", var, strict=FALSE))
+      coord_index_var<-append(coord_index_var, findVarByAtt(nc, "coordinates", var, strict=FALSE))
     }
     coord_index_var<-unique(coord_index_var)[[1]]
+  }
 
+  if(grepl("multipolygon", geom_type) || grepl("multiline", geom_type)) {
     if(length(coord_index_var)>1) {stop('only one geom_coordinates index is supported, this file has more than one.')}
 
     if(length(coord_index_var)==0) {

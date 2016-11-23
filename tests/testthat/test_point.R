@@ -24,6 +24,9 @@ test_that("Point_timeSeries", {
   expect_equivalent(ncatt_get(nc,varid="lat","standard_name")$value,"latitude")
   expect_equivalent(ncatt_get(nc,varid="lon","standard_name")$value,"longitude")
   returnPointData<-FromNCDFSG(nc_file)
+  expect_equal(as.numeric(multipointData@coords), as.numeric(returnPointData@coords))
+  expect_equal(as.numeric(multipointData@bbox), as.numeric(returnPointData@bbox))
+
 })
 
 test_that("multiPoint_timeSeries", {
@@ -39,6 +42,9 @@ test_that("multiPoint_timeSeries", {
   expect_equivalent(ncatt_get(nc,varid="instance_name","cf_role")$value,"timeseries_id")
   expect_equivalent(ncatt_get(nc,varid="lat","standard_name")$value,"latitude")
   expect_equivalent(ncatt_get(nc,varid="lon","standard_name")$value,"longitude")
+  returnPointData<-FromNCDFSG(nc_file)
+  expect_equal(as.numeric(multipointData@coords), as.numeric(returnPointData@coords))
+  expect_equal(as.numeric(multipointData@bbox), as.numeric(returnPointData@bbox))
 })
 
 test_that("multiPoint lat lon alt", {
@@ -60,6 +66,9 @@ test_that("multiPoint lat lon alt", {
   lat<-lat[1:(length(lat)-2)]
   expect_error(ToNCDFSG(nc_file=tempfile(), lons = lon, lats = lat),
                regexp = "station_names, lats, and lons must all be vectors of the same length")
+  returnPointData<-FromNCDFSG(nc_file)
+  expect_equal(as.numeric(multipointData@coords), as.numeric(returnPointData@coords))
+  expect_equal(as.numeric(multipointData@bbox), as.numeric(returnPointData@bbox))
 })
 
 test_that("shapefile_point", {
@@ -75,4 +84,7 @@ test_that("shapefile_point", {
   expect_equal(sum(ncvar_get(nc, nc$var$lon)), sum(pointData@coords[,1]))
   expect_equal(as.character(ncvar_get(nc, nc$var$site_no)), pointData@data$site_no)
   expect_equal(as.numeric(ncvar_get(nc, nc$var$drain_area)), pointData@data$drain_area)
+  returnPointData<-FromNCDFSG(nc_file)
+  expect_equal(as.numeric(pointData@coords), as.numeric(returnPointData@coords))
+  expect_equal(as.numeric(pointData@bbox), as.numeric(returnPointData@bbox))
 })
