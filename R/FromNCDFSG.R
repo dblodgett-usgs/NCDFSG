@@ -33,25 +33,18 @@ FromNCDFSG = function(nc_file) {
 
   if(point) {
     point_data_var <- strsplit(ncatt_get(nc, coord_index_var, attname = "coordinates")$value, " ")[[1]]
-
     point_data <- matrix(c(ncvar_get(nc, point_data_var[1]),
                            ncvar_get(nc, point_data_var[2])), ncol=2)
-
-    dataFrame <- getDF(nc, instance_id, point_data_var)
-
+    dataFrame <- getDF(nc, point_data_var)
     SPGeom <- SpatialPointsDataFrame(point_data, proj4string = CRS("+proj=longlat +datum=WGS84"),
                                      data = dataFrame, match.ID = FALSE)
-
-
   } else {
     node_data <- strsplit(ncatt_get(nc, coord_index_var, attname = "geom_coordinates")$value, " ")[[1]]
-
     stop_inds <- ncvar_get(nc, coord_index_stop_var)
     instance_names <- ncvar_get(nc, instance_id)
     start_ind <- 1
     Srl <- list()
     ragged_ind_var<-ncvar_get(nc, coord_index_var)
-
     for(geom in 1:length(stop_inds)) {
       stop_ind <- stop_inds[geom]
       ragged_inds <- ragged_ind_var[start_ind:stop_ind]
@@ -82,9 +75,7 @@ FromNCDFSG = function(nc_file) {
         Srl <- append(Srl, Lines(srl, as.character(geom)))
       }
     }
-
-    dataFrame <- getDF(nc, instance_id, coord_index_stop_var)
-
+    dataFrame <- getDF(nc, coord_index_stop_var)
     if(poly) {
       SPGeom <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
                                          dataFrame, match.ID = FALSE)
@@ -93,22 +84,8 @@ FromNCDFSG = function(nc_file) {
                                       dataFrame, match.ID = FALSE)
     }
   }
+  nc_close(nc)
   return(SPGeom)
-}
-
-getDF <- function(nc, instance_id, instance_var) {
-  dataFrame <- as.data.frame(list(id=1:nc$var[instance_var][[1]]$dim[[1]]$len))
-  for(var in nc$var) {
-    if(var$ndims==1 && grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) &&
-       !grepl(var$name, paste0("^",instance_var,"$"))) {
-      dataFrame[var$name] <- c(ncvar_get(nc, var$name))
-    } else if(grepl(var$prec, paste0("^char$")) &&
-              (grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) ||
-               grepl(var$dim[[2]]$name,paste0("^",instance_id,"$"))))
-      dataFrame[var$name] <- c(ncvar_get(nc, var$name))
-  }
-  dataFrame[] <- lapply(dataFrame, make.true.NA)
-  return(dataFrame)
 }
 
 # found here: http://stackoverflow.com/questions/26220913/replace-na-with-na
@@ -130,81 +107,4 @@ getPolysrl <- function(nc, node_data, coords_start, coords_count, hole) {
   srl<-Polygon(coords, hole=hole)
   dimnames(srl@coords) <- list(NULL, c("x", "y"))
   return(srl)
-}
-
-findVarByAtt <- function(nc, attribute, value, strict=TRUE) {
-  foundVar<-list()
-  for(variable in c(names(nc$var), names(nc$dim))) {
-    temp<-try(ncatt_get(nc,variable,attribute)$value)
-    if(strict) value<-paste0("^",value,"$")
-    if(!is.null(temp) && grepl(value,temp)) {
-      foundVar<-append(foundVar,variable)
-    }
-  }
-  return(foundVar)
-}
-
-checkNCDF <- function(nc) {
-
-  instance_id<-NULL
-  coord_index_var<-NULL
-  coord_index_stop_var<-NULL
-  multi_break_val<-NULL
-  hole_break_val<-NULL
-
-  # Assume geom_type is point
-  geom_type<-"point"
-
-  # Check important global atts
-  if(!grepl('CF',ncatt_get(nc,0,'Conventions')$value)) {
-    warning('File does not advertise CF conventions, unexpected behavior may result.')}
-
-  # Look for variable with the timeseries_id in it.
-  instance_id<-unlist(findVarByAtt(nc, 'cf_role', 'timeseries_id'))
-  if(is.null(instance_id)) { stop('A timeseries id variable was not found in the file.') }
-
-  # Look for 'geom_coordinates' that match variable names.
-  coord_index_var<-list()
-  for(var in c(names(nc$var), names(nc$dim))) { # need to come back to handle coordinate variables named the same as the dimension.
-    coord_index_var<-append(coord_index_var, findVarByAtt(nc, "geom_coordinates", var, strict=FALSE))
-  }
-
-  if(length(coord_index_var)>0) {
-    coord_index_var<-unique(coord_index_var)[[1]]
-    geom_type <- ncatt_get(nc, coord_index_var, attname = "geom_type")$value
-  }
-
-  if(grepl("point", geom_type)) {
-    coord_index_var<-list()
-    for(var in c(names(nc$var), names(nc$dim))) { # need to come back to handle coordinate variables named the same as the dimension.
-      coord_index_var<-append(coord_index_var, findVarByAtt(nc, "coordinates", var, strict=FALSE))
-    }
-    coord_index_var<-unique(coord_index_var)[[1]]
-  }
-
-  if(grepl("multipolygon", geom_type) || grepl("multiline", geom_type)) {
-    if(length(coord_index_var)>1) {stop('only one geom_coordinates index is supported, this file has more than one.')}
-
-    if(length(coord_index_var)==0) {
-      stop('No geometry coordinates were found in the file but required for geometry.') }
-
-    coord_index_stop_var<-list()
-    for(dimen in c(names(nc$dim))) {
-      coord_index_stop_var <- append(coord_index_stop_var, findVarByAtt(nc, "contiguous_ragged_dimension", dimen))
-    }
-    coord_index_stop_var <- unique(coord_index_stop_var)[[1]]
-
-    if(length(coord_index_stop_var)>1) {stop('only one contiquous ragged dimension index is supported, this file has more than one.')}
-
-    try(multi_break_val <- ncatt_get(nc, coord_index_var, 'multipart_break_value')$value)
-    try(hole_break_val <- ncatt_get(nc, coord_index_var, 'hole_break_value')$value)
-    # Could also implement outer_ring_order and closure convention.
-  }
-
-  return(list(instance_id=instance_id,
-              coord_index_var=coord_index_var,
-              coord_index_stop_var=coord_index_stop_var,
-              multi_break_val=multi_break_val,
-              hole_break_val=hole_break_val,
-              geom_type=geom_type))
 }
