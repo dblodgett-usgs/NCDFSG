@@ -84,6 +84,29 @@ test_that("polygon_timeSeries for multipolygons with holes.", {
   expect_equal(length(nc$dim$coordinate_index$vals), as.numeric(ncvar_get(nc,'coordinate_index_stop')))
   expect_equal(length(ncvar_get(nc,"x")), (as.numeric(ncvar_get(nc,'coordinate_index_stop'))-5)) # Five for extracoords.
   expect_equal(length(ncvar_get(nc, "x")), nc$dim$coordinate_index$vals[ncvar_get(nc,'coordinate_index_stop')]) # Check indexes are clean.
+  # checkAllPoly(nc, polygonData, nc$dim$coordinate_index$vals, ncvar_get(nc, nc$var$coordinate_index_stop))
   returnPolyData<-FromNCDFSG(nc_file)
   compareSP(polygonData, returnPolyData)
 })
+
+checkAllPoly <- function(nc, polygonData, ragged_index, stop_indices) {
+  i<-0
+  j<-0
+  for(g in 1:length(polygonData@polygons)) {
+    for(p in 1:length(polygonData@polygons[[g]]@Polygons)) {
+      if(p>1) {
+        i<-i+1
+        if(polygonData@polygons[[g]]@Polygons[[p]]@hole) {
+          expect_equal(ragged_index[i], -2)
+        } else {expect_equal(ragged_index[i], -1) }
+      }
+      for(c in 1:length(polygonData@polygons[[g]]@Polygons[[p]]@coords[,1])){
+        i<-i+1
+        j<-j+1
+        expect_equal(ragged_index[i],j)
+      }
+    }
+    expect_equal(ragged_index[stop_indices[g]],j)
+    expect_equal(stop_indices[g], i)
+  }
+}

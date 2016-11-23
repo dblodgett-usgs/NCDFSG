@@ -40,40 +40,54 @@ FromNCDFSG = function(nc_file) {
                                      data = dataFrame, match.ID = FALSE)
   } else {
     node_data <- strsplit(ncatt_get(nc, coord_index_var, attname = "geom_coordinates")$value, " ")[[1]]
-    stop_inds <- ncvar_get(nc, coord_index_stop_var)
+    xCoords <- c(ncvar_get(nc, node_data[1]))
+    yCoords <- c(ncvar_get(nc, node_data[2]))
+    stop_inds <- c(ncvar_get(nc, coord_index_stop_var))
     instance_names <- ncvar_get(nc, instance_id)
+    ragged_ind_var<-ncvar_get(nc, coord_index_var)
+    breaks <- sort(c(which(ragged_ind_var == hole_break_val),
+                     which(ragged_ind_var == multi_break_val)))
+    multi_hole <- rep(FALSE, length(breaks))
+    multi_hole[which(ragged_ind_var[breaks] == hole_break_val)] <- TRUE
     start_ind <- 1
     Srl <- list()
-    ragged_ind_var<-ncvar_get(nc, coord_index_var)
+    coord_start <- 1
     for(geom in 1:length(stop_inds)) {
       stop_ind <- stop_inds[geom]
-      ragged_inds <- ragged_ind_var[start_ind:stop_ind]
-      breaks <- sort(c(which(ragged_inds == hole_break_val), which(ragged_inds == multi_break_val)))
-      multi_hole <- rep(FALSE, length(breaks))
-      multi_hole[which(ragged_inds[breaks] == hole_break_val)] <- TRUE
+      break_ind<-breaks[which(start_ind < breaks & stop_ind > breaks)]
       srl <- list()
-      coords_start <- 1
       hole<-FALSE # First is always a polygon, not a hole?
-      if(length(breaks) > 0) {
-        for(part in 1:length(breaks)) {
-          coords_count <- ragged_inds[breaks[part]-1] - coords_start + 1
+      if(length(break_ind) > 0) {
+        for(part in 1:length(break_ind)) {
+          coord_stop <- ragged_ind_var[break_ind[part]-1]
+          coords <- matrix(c(xCoords[coord_start:coord_stop],yCoords[coord_start:coord_stop]),ncol=2)
           if(poly) {
-            srl <- append(srl, getPolysrl(nc, node_data, coords_start, coords_count, hole))
+            tsrl<-Polygon(coords, hole=hole)
           } else if(line) {
-            srl <- append(srl, getLinesrl(nc, node_data, coords_start, coords_count))
+            tsrl<-Line(coords)
           }
-          coords_start <- ragged_inds[breaks[part]+1] # Increments to the next position where there is an index.
+          dimnames(tsrl@coords) <- list(NULL, c("x", "y"))
+          srl <- append(srl, tsrl)
+          coord_start <- ragged_ind_var[break_ind[part]+1] # Increments to the next position where there is an index.
           hole<-multi_hole[part] # Indicates that a hole is coming next.
         }
       }
-      coords_count <- ragged_inds[stop_ind]-coords_start+1
-      if(poly) { # This could be refactored along with the two functions declared below (getPolysrl and getLinesrl)
-        srl <- append(srl, getPolysrl(nc, node_data, coords_start, coords_count, hole))
+      coord_stop <- ragged_ind_var[stop_ind]
+      coords <- matrix(c(xCoords[coord_start:coord_stop],yCoords[coord_start:coord_stop]),ncol=2)
+      coord_start<-coord_stop+1
+      if(poly) {
+        tsrl<-Polygon(coords, hole=hole)
+      } else if(line) {
+        tsrl<-Line(coords)
+      }
+      dimnames(tsrl@coords) <- list(NULL, c("x", "y"))
+      srl <- append(srl, tsrl)
+      if(poly) {
         Srl <- append(Srl, Polygons(srl, as.character(geom)))
       }  else if(line) {
-        srl <- append(srl, getLinesrl(nc, node_data, coords_start, coords_count))
         Srl <- append(Srl, Lines(srl, as.character(geom)))
       }
+      start_ind <- ragged_ind_var[stop_inds[geom]] + 1
     }
     dataFrame <- getDF(nc, coord_index_stop_var)
     if(poly) {
@@ -92,19 +106,3 @@ FromNCDFSG = function(nc_file) {
 make.true.NA <- function(x) if(is.character(x)||is.factor(x)){
   is.na(x) <- x=="NA"; x} else {
     x}
-
-getLinesrl <- function(nc, node_data, coords_start, coords_count) {
-  coords <- matrix(c(ncvar_get(nc, node_data[1], coords_start, coords_count),
-                     (ncvar_get(nc, node_data[2], coords_start, coords_count))),ncol = 2) # Assuming canonical axis order here!!!
-  srl<-Line(coords)
-  dimnames(srl@coords) <- list(NULL, c("x", "y"))
-  return(srl)
-}
-# The only thing different between these functions is the call to Line or Polygon. Maybe combine?
-getPolysrl <- function(nc, node_data, coords_start, coords_count, hole) {
-  coords <- matrix(c(ncvar_get(nc, node_data[1], coords_start, coords_count),
-                     (ncvar_get(nc, node_data[2], coords_start, coords_count))),ncol = 2) # Assuming canonical axis order here!!!
-  srl<-Polygon(coords, hole=hole)
-  dimnames(srl@coords) <- list(NULL, c("x", "y"))
-  return(srl)
-}

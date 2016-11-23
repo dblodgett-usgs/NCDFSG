@@ -50,14 +50,15 @@ test_that("A whole shapefile can be written", {
   # }
   returnPolyData<-FromNCDFSG(nc_file)
   compareSP(yaharaData, returnPolyData)
-  # for(name in names(yaharaData@data)) {
-  #   expect_equal(as.character(yaharaData@data[name]), as.character(returnPolyData@data[name]))
-  # }
+  for(name in names(yaharaData@data)) {
+    expect_equal(as.character(yaharaData@data[name]), as.character(returnPolyData@data[name]))
+  }
   # for(i in 1:length(returnPolyData@polygons)) {
   #   expect_equal(length(returnPolyData@polygons[[i]]@Polygons), length(yaharaData@polygons[[i]]@Polygons))
   #   for(j in 1:length(returnPolyData@polygons[[i]]@Polygons)) {
   #     expect_equal(length(returnPolyData@polygons[[i]]@Polygons[[j]]@coords), length(yaharaData@polygons[[i]]@Polygons[[j]]@coords))
   #   }
   # }
+  # writePolyShape(returnPolyData, "yaharaData_test")
 })
 
