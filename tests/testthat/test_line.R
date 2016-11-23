@@ -1,15 +1,5 @@
 library(ncdf4)
 
-compareSL <- function(lineData, returnLineData) {
-  expect_equal(length(lineData@lines[[1]]@Lines), length(returnLineData@lines[[1]]@Lines))
-  for(i in 1:length(length(lineData@lines[[1]]@Lines))) {
-    expect_equal(as.numeric(returnLineData@lines[[1]]@Lines[[i]]@coords),
-                 as.numeric(lineData@lines[[1]]@Lines[[i]]@coords))
-    # expect_equal(lineData@lines[[1]]@Lines[[i]], returnLineData@lines[[1]]@Lines[[i]]) # checks attributes, not sure it's work testing them.
-  }
-  # expect_equal(lineData@lines[[1]]@ID, returnLineData@lines[[1]]@ID) # maptools 0 indexes others 1 index. Not roundtripping this yet.
-}
-
 context("NCDF SG line tests")
 
 test_that("linedata works", {
