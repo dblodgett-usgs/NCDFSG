@@ -40,55 +40,55 @@ FromNCDFSG = function(nc_file) {
   Srl <- list()
   ragged_ind_var<-ncvar_get(nc, coord_index_var)
 
-    for(geom in 1:length(stop_inds)) {
-      stop_ind <- stop_inds[geom]
-      ragged_inds <- ragged_ind_var[start_ind:stop_ind]
-      breaks <- sort(c(which(ragged_inds == hole_break_val), which(ragged_inds == multi_break_val)))
-      multi_hole <- rep(FALSE, length(breaks))
-      multi_hole[which(ragged_inds[breaks] == hole_break_val)] <- TRUE
-      srl <- list()
-      coords_start <- 1
-      hole<-FALSE # First is always a polygon, not a hole?
-      if(length(breaks) > 0) {
-        for(part in 1:length(breaks)) {
-          coords_count <- ragged_inds[breaks[part]-1] - coords_start + 1
-          if(poly) {
-            srl <- append(srl, getPolysrl(nc, node_data, coords_start, coords_count, hole))
-          } else if(line) {
-            srl <- append(srl, getLinesrl(nc, node_data, coords_start, coords_count))
-          }
-          coords_start <- ragged_inds[breaks[part]+1] # Increments to the next position where there is an index.
-          hole<-multi_hole[part] # Indicates that a hole is coming next.
+  for(geom in 1:length(stop_inds)) {
+    stop_ind <- stop_inds[geom]
+    ragged_inds <- ragged_ind_var[start_ind:stop_ind]
+    breaks <- sort(c(which(ragged_inds == hole_break_val), which(ragged_inds == multi_break_val)))
+    multi_hole <- rep(FALSE, length(breaks))
+    multi_hole[which(ragged_inds[breaks] == hole_break_val)] <- TRUE
+    srl <- list()
+    coords_start <- 1
+    hole<-FALSE # First is always a polygon, not a hole?
+    if(length(breaks) > 0) {
+      for(part in 1:length(breaks)) {
+        coords_count <- ragged_inds[breaks[part]-1] - coords_start + 1
+        if(poly) {
+          srl <- append(srl, getPolysrl(nc, node_data, coords_start, coords_count, hole))
+        } else if(line) {
+          srl <- append(srl, getLinesrl(nc, node_data, coords_start, coords_count))
         }
-      }
-      coords_count <- ragged_inds[stop_ind]-coords_start+1
-      if(poly) { # This could be refactored along with the two functions declared below (getPolysrl and getLinesrl)
-        srl <- append(srl, getPolysrl(nc, node_data, coords_start, coords_count, hole))
-        Srl <- append(Srl, Polygons(srl, as.character(geom)))
-      }  else if(line) {
-        srl <- append(srl, getLinesrl(nc, node_data, coords_start, coords_count))
-        Srl <- append(Srl, Lines(srl, as.character(geom)))
+        coords_start <- ragged_inds[breaks[part]+1] # Increments to the next position where there is an index.
+        hole<-multi_hole[part] # Indicates that a hole is coming next.
       }
     }
-
-    dataFrame <- as.data.frame(list(id=1:nc$var[coord_index_stop_var][[1]]$dim[[1]]$len))
-
-    for(var in nc$var) {
-      if(var$ndims==1 && grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) &&
-         !grepl(var$name, paste0("^",coord_index_stop_var,"$"))) {
-        dataFrame[var$name] <- ncvar_get(nc, var$name)
-      } else if(grepl(var$prec, paste0("^char$")) &&
-                (grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) ||
-                 grepl(var$dim[[2]]$name,paste0("^",instance_id,"$"))))
-        dataFrame[var$name] <- ncvar_get(nc, var$name)
+    coords_count <- ragged_inds[stop_ind]-coords_start+1
+    if(poly) { # This could be refactored along with the two functions declared below (getPolysrl and getLinesrl)
+      srl <- append(srl, getPolysrl(nc, node_data, coords_start, coords_count, hole))
+      Srl <- append(Srl, Polygons(srl, as.character(geom)))
+    }  else if(line) {
+      srl <- append(srl, getLinesrl(nc, node_data, coords_start, coords_count))
+      Srl <- append(Srl, Lines(srl, as.character(geom)))
     }
-    if(poly) {
-      SPGeom <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
-                                         dataFrame, match.ID = FALSE)
-    } else if(line) {
-      SPGeom <- SpatialLinesDataFrame(SpatialLines(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
-                                      dataFrame, match.ID = FALSE)
-    }
+  }
+
+  dataFrame <- as.data.frame(list(id=1:nc$var[coord_index_stop_var][[1]]$dim[[1]]$len))
+
+  for(var in nc$var) {
+    if(var$ndims==1 && grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) &&
+       !grepl(var$name, paste0("^",coord_index_stop_var,"$"))) {
+      dataFrame[var$name] <- ncvar_get(nc, var$name)
+    } else if(grepl(var$prec, paste0("^char$")) &&
+              (grepl(var$dim[[1]]$name,paste0("^",instance_id,"$")) ||
+               grepl(var$dim[[2]]$name,paste0("^",instance_id,"$"))))
+      dataFrame[var$name] <- ncvar_get(nc, var$name)
+  }
+  if(poly) {
+    SPGeom <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
+                                       dataFrame, match.ID = FALSE)
+  } else if(line) {
+    SPGeom <- SpatialLinesDataFrame(SpatialLines(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
+                                    dataFrame, match.ID = FALSE)
+  }
 
   return(SPGeom)
 }
