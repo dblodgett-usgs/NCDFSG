@@ -14,7 +14,6 @@
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
 #'
 #'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
-#'@importFrom broom tidy
 #'
 #'@export
 addGeomData<-function(nc_file, geomData, names) {
@@ -30,77 +29,61 @@ addGeomData<-function(nc_file, geomData, names) {
     linesMode<-TRUE
   }
 
-  geomData<-tidy(geomData)
-
-  ids<-unique(geomData$id)
-
-  # coordinate index needs to be the length of the coordinates plus the number of multilines.
-  # group contains one value for each unique polygon ring.
-  coordinate_index_len <- length(geomData$long) + length(levels(geomData$group)) - n
-
-  # Will contain order and mutlipolygon/hole break values.
-  ragged_ind <- 1:coordinate_index_len
-
-  if(coordinate_index_len==length(geomData$long)) { # If there are no multiGeometries or holes.
-    ragged_ind <- 1:coordinate_index_len
-
-    id_finder<-function(i, d) {max(which(d==i))} # Finds the last index of the value i.
-    # coordinate_index_stop_vals are where each polygon stops in the coordinates.
-    ragged_index_stop_vals <- sapply(ids, id_finder, d = geomData$id, USE.NAMES = FALSE)
-
-  } else {
-    # for each id, the piece field increments by one for each piece of the geometry same for holes and multipoly.
-    coord_breaks <- which(diff(as.numeric(geomData$piece))==1)
-    # variable to track the number of hole values.
-    extra_ind<-0
-    # location to start inserting into the ragged_ind vector
-    start_ind<-1
-    # location to start pulling from the geomData.
-    start_coord<-1
-    for(i in 1:length(coord_breaks)) {
-      stop_coord<-coord_breaks[i] # convenience
-      # Put the coordinate index data in place.
-      ragged_ind[start_ind:(stop_coord+extra_ind)] <- start_coord:stop_coord
-      # increment the extra_ind.
-      extra_ind <- extra_ind + 1
-      if(linesMode) {
-        ragged_ind[stop_coord+extra_ind] <- multi_break_val
-      } else {
-        if(geomData$hole[stop_coord+1]) {
-          ragged_ind[stop_coord+extra_ind] <- hole_break_val
-        } else {
-          ragged_ind[stop_coord+extra_ind] <- multi_break_val
+  rInd<-1
+  cInd<-1
+  ragged_ind<-c()
+  ragged_index_stop_vals<-c()
+  xVals<-c()
+  yVals<-c()
+  if(!linesMode) {
+    for(geom in 1:length(geomData)) {
+      for(part in 1:length(geomData@polygons[[geom]]@Polygons)) {
+        if(part > 1) {
+          if(geomData@polygons[[geom]]@Polygons[[part]]@hole) {
+            ragged_ind<-c(ragged_ind,hole_break_val)
+          } else {
+            ragged_ind<-c(ragged_ind,multi_break_val)
+          }
+          rInd<-rInd+1
         }
+        coords<-geomData@polygons[[geom]]@Polygons[[part]]@coords
+        cCount<-length(coords[,1])
+        xVals<-c(xVals,coords[,1])
+        yVals<-c(yVals,coords[,2])
+        ragged_ind<-c(ragged_ind,cInd:(cInd+cCount-1))
+        cInd<-cInd+cCount
+        rInd<-rInd+cCount
       }
-      # Increment start positions.
-      start_coord <- stop_coord + 1
-      start_ind <- stop_coord + extra_ind + 1
+      ragged_index_stop_vals<-c(ragged_index_stop_vals, rInd-1)
     }
-    # Last set of normal polygons.
-    ragged_ind[start_ind:(length(geomData$order) + extra_ind)] <- start_coord:length(geomData$order)
-
-    # Finds the last index of the value i this time returning the index into the coordinate_index which includes extraCoords.
-    id_finder2<-function(i, d, s) {which(s == max(which(d==i)))}
-    # coordinate_index_stop_vals are where each polygon stops in the coordinates.
-    coordinate_index_stop_vals <- sapply(ids, id_finder2, d = geomData$id,s=ragged_ind, USE.NAMES = FALSE)
-    if(length(coordinate_index_stop_vals)>1) {
-      ragged_index_stop_vals<-c(which(ragged_ind %in% coordinate_index_stop_vals),length(ragged_ind))
-    } else { ragged_index_stop_vals <- length(ragged_ind) }
-
+  } else if(linesMode) {
+    for(geom in 1:length(geomData)) {
+      for(part in 1:length(geomData@lines[[geom]]@Lines)) {
+        if(part > 1) {
+          ragged_ind<-c(ragged_ind,multi_break_val)
+          rInd<-rInd+1
+        }
+        coords<-geomData@lines[[geom]]@Lines[[part]]@coords
+        cCount<-length(coords[,1])
+        xVals<-c(xVals,coords[,1])
+        yVals<-c(yVals,coords[,2])
+        ragged_ind<-c(ragged_ind,cInd:(cInd+cCount-1))
+        cInd<-cInd+cCount
+        rInd<-rInd+cCount
+      }
+      ragged_index_stop_vals<-c(ragged_index_stop_vals, rInd-1)
+    }
   }
 
-  coord_dim<-ncdim_def('coordinates', '', 1:length(geomData$long), create_dimvar=FALSE)
+  coord_dim<-ncdim_def('coordinates', '', 1:length(xVals), create_dimvar=FALSE)
   xVar <- ncvar_def(name = "x", units = 'degrees_east', dim = coord_dim, prec = "double")
   yVar <- ncvar_def(name = "y", units = 'degrees_north', dim = coord_dim, prec = "double")
 
-  xVals <- geomData$long
-  yVals <- geomData$lat
-
   nc <- nc_open(nc_file,write = TRUE)
 
-  coordinate_index_dim<-ncdim_def('coordinate_index', '', 1:coordinate_index_len, create_dimvar = FALSE)
+  coordinate_index_dim<-ncdim_def('coordinate_index', '', 1:length(ragged_ind), create_dimvar = FALSE)
   coordinate_index_var<-ncvar_def(name = 'coordinate_index', units = '', dim = coordinate_index_dim,
-                                  longname = "index for coordinates and geometry break values", prec = "integer")
+                                  longname = "ragged index for coordinates and geometry break values", prec = "integer")
 
   coordinate_index_stop_var<-ncvar_def(name = 'coordinate_index_stop', units = '', dim = nc$dim$instance,
                                        longname = "index for last coordinate in each instance geometry", prec = "integer")

@@ -20,3 +20,25 @@ compareSL <- function(lineData, returnLineData) {
   }
   # expect_equal(lineData@lines[[1]]@ID, returnLineData@lines[[1]]@ID) # maptools 0 indexes others 1 index. Not roundtripping this yet.
 }
+
+checkAllPoly <- function(nc, polygonData, ragged_index, stop_indices) {
+  i<-0
+  j<-0
+  for(g in 1:length(polygonData@polygons)) {
+    for(p in 1:length(polygonData@polygons[[g]]@Polygons)) {
+      if(p>1) {
+        i<-i+1
+        if(polygonData@polygons[[g]]@Polygons[[p]]@hole) {
+          expect_equal(ragged_index[i], -2)
+        } else {expect_equal(ragged_index[i], -1) }
+      }
+      for(c in 1:length(polygonData@polygons[[g]]@Polygons[[p]]@coords[,1])){
+        i<-i+1
+        j<-j+1
+        expect_equal(ragged_index[i],j)
+      }
+    }
+    expect_equal(ragged_index[stop_indices[g]],j)
+    expect_equal(stop_indices[g], i)
+  }
+}

@@ -3,7 +3,6 @@ Type: Package
 Title: NetCDF-CF Simple Geometries
 Imports:
   ncdf4,
-  broom,
   sp,
   methods
 Depends:
