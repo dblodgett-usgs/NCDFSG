@@ -87,7 +87,7 @@ FromNCDFSG = function(nc_file) {
       }  else if(line) {
         Srl <- append(Srl, Lines(srl, as.character(geom)))
       }
-      start_ind <- ragged_ind_var[stop_inds[geom]] + 1
+      start_ind <- stop_ind + 1
     }
     dataFrame <- getDF(nc, coord_index_stop_var)
     if(poly) {

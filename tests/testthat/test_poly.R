@@ -71,10 +71,6 @@ test_that("polygon_timeSeries for a multipolygon with a hole.", {
   expect_equal(length(ncvar_get(nc, "x")), nc$dim$coordinate_index$vals[ncvar_get(nc,'coordinate_index_stop')]) # Check indexes are clean.
   checkAllPoly(nc, polygonData, nc$dim$coordinate_index$vals, ncvar_get(nc, nc$var$coordinate_index_stop))
   returnPolyData<-FromNCDFSG(nc_file)
-  temp<-returnPolyData@polygons[[1]]@Polygons[[1]] # tidy re-orders things in addGeomData.R, not a problem except for tests?
-  # Not going to fix for now... should move away from tidy any ways. This test will break when we do.
-  returnPolyData@polygons[[1]]@Polygons[[1]]<-returnPolyData@polygons[[1]]@Polygons[[2]]
-  returnPolyData@polygons[[1]]@Polygons[[2]]<-temp
   compareSP(polygonData, returnPolyData)
 })
 
