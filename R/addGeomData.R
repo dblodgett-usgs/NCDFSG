@@ -110,7 +110,6 @@ addGeomData<-function(nc_file, geomData, names) {
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multipolygon')
   }
   ncatt_put(nc = nc, varid = 'coordinate_index_stop', attname = 'contiguous_ragged_dimension', attval = 'coordinate_index')
-  ncatt_put(nc, 'instance_name', 'cf_role', 'timeseries_id')
   ncatt_put(nc, 'instance_name','standard_name','instance_id')
   #Important Global Variables
   ncatt_put(nc, 0,'Conventions','CF-1.8')

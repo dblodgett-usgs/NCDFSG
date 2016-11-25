@@ -16,7 +16,6 @@ test_that("polygon_timeSeries for basic polygon", {
                length(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]))
   expect_equivalent(ncatt_get(nc,varid=0,"Conventions")$value,"CF-1.8")
   expect_equivalent(ncatt_get(nc,varid="instance_name","standard_name")$value,"instance_id")
-  expect_equivalent(ncatt_get(nc,varid="instance_name","cf_role")$value,"timeseries_id")
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"geometry x node")
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"geometry y node")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")

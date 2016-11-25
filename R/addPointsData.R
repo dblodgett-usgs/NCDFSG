@@ -46,7 +46,6 @@ addPoints<-function(nc_file,xCoords,yCoords,alts=NULL) {
     ncatt_put(nc, 'alt', 'standard_name', 'height')
   }
 
-  ncatt_put(nc, 'instance_name', 'cf_role', 'timeseries_id')
   ncatt_put(nc, 'instance_name','standard_name','station_id')
   ncatt_put(nc, 'instance_name','coordinates','lon lat')
 

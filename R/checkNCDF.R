@@ -31,8 +31,14 @@ checkNCDF <- function(nc) {
     warning('File does not advertise CF conventions, unexpected behavior may result.')}
 
   # Look for variable with the timeseries_id in it.
-  instance_id<-unlist(findVarByAtt(nc, 'cf_role', 'timeseries_id'))
+  instance_id<-list()
+  instance_id<-append(instance_id, findVarByAtt(nc, 'cf_role', 'timeseries_id'))
+  instance_id<-append(instance_id, findVarByAtt(nc, 'standard_name', 'instance_id'))
+  instance_id<-append(instance_id, findVarByAtt(nc, 'standard_name', 'station_id'))
+  instance_id<-unlist(unique(instance_id))
   if(is.null(instance_id)) { stop('A timeseries id variable was not found in the file.') }
+  if(length(instance_id)>1) { stop('multiple timeseries id variables were found.') }
+
 
   # Look for 'geom_coordinates' that match variable names.
   coord_index_var<-list()
