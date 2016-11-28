@@ -5,7 +5,7 @@
 #'
 #'@description
 #'Introspects a netcdf file and tries to interpret it as a NetCDF-DSG file. Returns a named
-#'\code{list} containing \code{instance_id} \code{coord_index_var} \code{coord_index_stop_var}
+#'\code{list} containing \code{instance_id} \code{instanceDim} \code{coord_index_var} \code{coord_index_stop_var}
 #'\code{multi_break_val} \code{hole_break_val}. If these values aren't found or aren't applicable,
 #'they are returned \code{NULL}.
 #'
@@ -18,6 +18,7 @@
 checkNCDF <- function(nc) {
 
   instance_id<-NULL
+  instanceDim<-NULL
   coord_index_var<-NULL
   coord_index_stop_var<-NULL
   multi_break_val<-NULL
@@ -34,11 +35,15 @@ checkNCDF <- function(nc) {
   instance_id<-list()
   instance_id<-append(instance_id, findVarByAtt(nc, 'cf_role', 'timeseries_id'))
   instance_id<-append(instance_id, findVarByAtt(nc, 'standard_name', 'instance_id'))
-  instance_id<-append(instance_id, findVarByAtt(nc, 'standard_name', 'station_id'))
+  station_id<-append(instance_id, findVarByAtt(nc, 'standard_name', 'station_id'))
+
+  if(exists("station_id")) { # can use later to make sure station data are handled correctly.
+    instance_id <- station_id
+  }
+
   instance_id<-unlist(unique(instance_id))
   if(is.null(instance_id)) { stop('A timeseries id variable was not found in the file.') }
   if(length(instance_id)>1) { stop('multiple timeseries id variables were found.') }
-
 
   # Look for 'geom_coordinates' that match variable names.
   coord_index_var<-list()
@@ -78,7 +83,20 @@ checkNCDF <- function(nc) {
     # Could also implement outer_ring_order and closure convention.
   }
 
+  if(nc$var[instance_id][[1]]$ndims == 1) {
+    instanceDim <- nc$var[instance_id][[1]]$dim[[1]]$name
+  } else if(!is.null(coord_index_stop_var)) {
+    instanceDim <- nc$var[coord_index_stop_var][[1]]$dim[[1]]$name
+  } else if(geom_type == "point") {
+    latVar<-unlist(findVarByAtt(nc, "standard_name", "latitude", TRUE))
+    if(length(latVar)>0) instanceDim <- nc$var[latVar][[1]]$dim[[1]]$name
+  } else if(nc$var[instance_id][[1]]$prec == "char" && nc$var[instance_id][[1]]$ndims == 2) {
+    warning("instance dimension is being inferred based on an assumption of dimension order of the character instance_id and may not be correct.")
+    instanceDim <- nc$var[instance_id][[1]]$dim[[2]]$name
+  }
+
   return(list(instance_id=instance_id,
+              instanceDim=instanceDim,
               coord_index_var=coord_index_var,
               coord_index_stop_var=coord_index_stop_var,
               multi_break_val=multi_break_val,
