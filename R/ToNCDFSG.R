@@ -2,7 +2,7 @@
 #'
 #'
 #'@param nc_file A string file path to the nc file to be created.
-#'@param names A character vector of names for the points. If NULL, integers are used.
+#'@param instance_names A character vector of names for the points. If NULL, integers are used.
 #'@param geomData An object of class \code{SpatialPoints}, \code{SpatialLines} or
 #'\code{SpatialPolygons} with WGS84 lon in the x coordinate and lat in the y coordinate.
 #'Note that three dimensional geometries is not supported.
