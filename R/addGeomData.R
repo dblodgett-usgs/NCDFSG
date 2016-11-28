@@ -101,6 +101,7 @@ addGeomData<-function(nc_file, geomData, names) {
   ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'geometry y node')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_coordinates', attval = 'x y')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
+  ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'start_index', attval = 1)
   if(linesMode) {
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multiline')
   } else {

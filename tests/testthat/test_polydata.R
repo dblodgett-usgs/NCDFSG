@@ -9,7 +9,7 @@ context("NCDF SG polygonData tests")
 
 test_that("A whole shapefile can be written", {
   polygonData <- readRDS("data/yahara_shapefile_data.rds")
-  nc_file <- ToNCDFSG(nc_file="test.nc", geomData = polygonData)
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
   expect_equal(as.numeric(polygonData@data$GRIDCODE),as.numeric(ncvar_get(nc, varid = "GRIDCODE")))

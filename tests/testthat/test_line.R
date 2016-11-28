@@ -15,6 +15,7 @@ test_that("linedata works", {
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"geometry x node")
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"geometry y node")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")
+  expect_equal(ncatt_get(nc,varid="coordinate_index",attname = "start_index")$value,1)
   returnLineData<-FromNCDFSG(nc_file)
   compareSL(lineData, returnLineData)
 })
