@@ -4,7 +4,7 @@
 \alias{ToNCDFSG}
 \title{Convert sp objects to NetCDF}
 \usage{
-ToNCDFSG(nc_file, geomData = NULL, names = NULL, lats = NULL,
+ToNCDFSG(nc_file, geomData = NULL, instance_names = NULL, lats = NULL,
   lons = NULL, alts = NULL)
 }
 \arguments{
@@ -14,13 +14,13 @@ ToNCDFSG(nc_file, geomData = NULL, names = NULL, lats = NULL,
 \code{SpatialPolygons} with WGS84 lon in the x coordinate and lat in the y coordinate.
 Note that three dimensional geometries is not supported.}
 
-\item{names}{A character vector of names for the points. If NULL, integers are used.}
-
 \item{lats}{Vector of WGS84 latitudes}
 
 \item{lons}{Vector of WGS84 longitudes}
 
 \item{alts}{Vector of altitudes assumed to be height above mean sea level}
+
+\item{names}{A character vector of names for the points. If NULL, integers are used.}
 }
 \description{
 Creates a file with point, line or polygon instance data ready for the extended NetCDF-CF timeSeries featuretype format.

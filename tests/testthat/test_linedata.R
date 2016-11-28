@@ -9,7 +9,7 @@ context("NCDF SG lineData tests")
 
 test_that("shapefile line data works", {
   lineData <- readRDS("data/NHDline_data.rds")
-  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData, names = as.character(lineData@data$COMID))
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData, instance_names = as.character(lineData@data$COMID))
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
   returnLineData<-FromNCDFSG(nc_file)

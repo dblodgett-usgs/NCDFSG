@@ -9,7 +9,7 @@ context("NCDF SG pointData tests")
 
 test_that("shapefile_point", {
   pointData <- readRDS("data/se_points_data.rds")
-  nc_file<-ToNCDFSG(nc_file = tempfile(), geomData = pointData, names = pointData@data$station_nm)
+  nc_file<-ToNCDFSG(nc_file = tempfile(), geomData = pointData, instance_names = pointData@data$station_nm)
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
   expect_true(all(names(pointData@data) %in% names(nc$var)))

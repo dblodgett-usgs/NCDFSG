@@ -45,7 +45,7 @@ test_that("multiline data frame works", {
   lineData <- readRDS("data/multiLineData.rds")
   testdata<-as.data.frame(list("name"=c("test_name"), "id"=c(1)))
   lineData <- SpatialLinesDataFrame(lineData, testdata)
-  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData, names = as.character(lineData@data$name))
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData, instance_names = as.character(lineData@data$name))
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
   returnLineData<-FromNCDFSG(nc_file)
