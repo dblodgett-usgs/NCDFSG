@@ -35,7 +35,7 @@ FromNCDFSG = function(nc_file) {
     point_data_var <- strsplit(ncatt_get(nc, coord_index_var, attname = "coordinates")$value, " ")[[1]]
     point_data <- matrix(c(ncvar_get(nc, point_data_var[1]),
                            ncvar_get(nc, point_data_var[2])), ncol=2)
-    dataFrame <- getDF(nc, point_data_var)
+    dataFrame <- read_instance_data(nc, point_data_var)
     SPGeom <- SpatialPointsDataFrame(point_data, proj4string = CRS("+proj=longlat +datum=WGS84"),
                                      data = dataFrame, match.ID = FALSE)
   } else {
@@ -89,7 +89,7 @@ FromNCDFSG = function(nc_file) {
       }
       start_ind <- stop_ind + 1
     }
-    dataFrame <- getDF(nc, coord_index_stop_var)
+    dataFrame <- read_instance_data(nc, coord_index_stop_var)
     if(poly) {
       SPGeom <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
                                          dataFrame, match.ID = FALSE)
