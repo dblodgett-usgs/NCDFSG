@@ -52,7 +52,8 @@ checkNCDF <- function(nc) {
   }
 
   if(length(coord_index_var)>0) {
-    coord_index_var<-unique(coord_index_var)[[1]]
+    coord_index_var<-unlist(unique(coord_index_var))
+    if(length(coord_index_var)>1) {stop('only one geom_coordinates index is supported, this file has more than one.')}
     geom_type <- ncatt_get(nc, coord_index_var, attname = "geom_type")$value
   }
 
@@ -65,16 +66,12 @@ checkNCDF <- function(nc) {
   }
 
   if(grepl("multipolygon", geom_type) || grepl("multiline", geom_type)) {
-    if(length(coord_index_var)>1) {stop('only one geom_coordinates index is supported, this file has more than one.')}
-
-    if(length(coord_index_var)==0) {
-      stop('No geometry coordinates were found in the file but required for geometry.') }
 
     coord_index_stop_var<-list()
     for(dimen in c(names(nc$dim))) {
       coord_index_stop_var <- append(coord_index_stop_var, findVarByAtt(nc, "contiguous_ragged_dimension", dimen))
     }
-    coord_index_stop_var <- unique(coord_index_stop_var)[[1]]
+    coord_index_stop_var <- unlist(unique(coord_index_stop_var))
 
     if(length(coord_index_stop_var)>1) {stop('only one contiquous ragged dimension index is supported, this file has more than one.')}
 
@@ -87,10 +84,11 @@ checkNCDF <- function(nc) {
     instanceDim <- nc$var[instance_id][[1]]$dim[[1]]$name
   } else if(!is.null(coord_index_stop_var)) {
     instanceDim <- nc$var[coord_index_stop_var][[1]]$dim[[1]]$name
-  } else if(geom_type == "point") {
+  } else if(geom_type == "point" ) {
     latVar<-unlist(findVarByAtt(nc, "standard_name", "latitude", TRUE))
     if(length(latVar)>0) instanceDim <- nc$var[latVar][[1]]$dim[[1]]$name
-  } else if(nc$var[instance_id][[1]]$prec == "char" && nc$var[instance_id][[1]]$ndims == 2) {
+  }
+  if(nc$var[instance_id][[1]]$prec == "char" && nc$var[instance_id][[1]]$ndims == 2 && is.null(instanceDim)) {
     warning("instance dimension is being inferred based on an assumption of dimension order of the character instance_id and may not be correct.")
     instanceDim <- nc$var[instance_id][[1]]$dim[[2]]$name
   }
