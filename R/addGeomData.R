@@ -97,8 +97,8 @@ addGeomData<-function(nc_file, geomData, names) {
   ncvar_put(nc = nc, varid = 'coordinate_index', vals = ragged_ind)
   ncvar_put(nc = nc, varid = 'coordinate_index_stop', vals = ragged_index_stop_vals)
 
-  ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'geometry x node')
-  ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'geometry y node')
+  ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'geometry_x_node')
+  ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'geometry_y_node')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_coordinates', attval = 'x y')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'start_index', attval = 1)
