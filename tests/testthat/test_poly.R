@@ -25,6 +25,12 @@ test_that("polygon_timeSeries for basic polygon", {
   compareSP(polygonData, returnPolyData)
 })
 
+test_that("still works when missing geom_dimension", {
+  polygonData <- readRDS("data/polygonData.rds")
+  returnPolyData<-FromNCDFSG("data/borked_geom_dimension.nc")
+  compareSP(polygonData, returnPolyData)
+  })
+
 test_that("polygon_timeSeries for polygon with a hole.", {
   polygonData <- readRDS("data/polygon_holeData.rds")
   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
