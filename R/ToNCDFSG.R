@@ -80,7 +80,7 @@ ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL
     nc_file <- write_instance_data(nc_file, instance_names)
   }
 
-  if(!pointsMode) nc_file <- addGeomData(nc_file, geomData, instance_names)
+  if(!pointsMode) nc_file <- addGeomData(nc_file, geomData)
 
   if(pointsMode) nc_file <- addPoints(nc_file, xCoords, yCoords, alts)
 

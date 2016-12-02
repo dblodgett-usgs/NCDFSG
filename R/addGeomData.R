@@ -4,7 +4,6 @@
 #'@param nc_file A string file path to the nc file to be created. It must already have an instance dimension.
 #'@param geomData An object of class \code{SpatialLines} or \code{SpatialPolygons} with WGS84 lon in the x coordinate and lat in the y coordinate.
 #'Note that three dimensional geometries is not supported.
-#'@param names A character vector of names for the points.
 
 #'@description
 #'Creates a file with point, line or polygon instance data ready for the extended NetCDF-CF timeSeries featuretype format.
@@ -16,14 +15,12 @@
 #'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
 #'
 #'@export
-addGeomData<-function(nc_file, geomData, names) {
+addGeomData<-function(nc_file, geomData) {
 
   hole_break_val <- -2
   holes <- FALSE
   multi_break_val <- -1
   multis <- FALSE
-
-  n <- length(names)
 
   linesMode<-FALSE
 
