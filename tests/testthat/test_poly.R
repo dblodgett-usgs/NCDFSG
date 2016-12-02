@@ -20,6 +20,7 @@ test_that("polygon_timeSeries for basic polygon", {
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"geometry_x_node")
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"geometry_y_node")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")
+  expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_dimension")$value,"instance")
   returnPolyData<-FromNCDFSG(nc_file)
   compareSP(polygonData, returnPolyData)
 })

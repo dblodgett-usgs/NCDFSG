@@ -19,7 +19,9 @@
 addGeomData<-function(nc_file, geomData, names) {
 
   hole_break_val <- -2
+  holes <- FALSE
   multi_break_val <- -1
+  multis <- FALSE
 
   n <- length(names)
 
@@ -41,8 +43,10 @@ addGeomData<-function(nc_file, geomData, names) {
         if(part > 1) {
           if(geomData@polygons[[geom]]@Polygons[[part]]@hole) {
             ragged_ind<-c(ragged_ind,hole_break_val)
+            holes <- TRUE
           } else {
             ragged_ind<-c(ragged_ind,multi_break_val)
+            multis <- TRUE
           }
           rInd<-rInd+1
         }
@@ -60,6 +64,7 @@ addGeomData<-function(nc_file, geomData, names) {
     for(geom in 1:length(geomData)) {
       for(part in 1:length(geomData@lines[[geom]]@Lines)) {
         if(part > 1) {
+          multis <- TRUE
           ragged_ind<-c(ragged_ind,multi_break_val)
           rInd<-rInd+1
         }
@@ -100,12 +105,13 @@ addGeomData<-function(nc_file, geomData, names) {
   ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'geometry_x_node')
   ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'geometry_y_node')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_coordinates', attval = 'x y')
-  ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
+  ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_dimension', attval = nc$dim$instance$name)
+  if (multis) ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'start_index', attval = 1)
   if(linesMode) {
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multiline')
   } else {
-    ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'hole_break_value', attval = hole_break_val)
+    if (holes) ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'hole_break_value', attval = hole_break_val)
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'outer_ring_order', attval = 'anticlockwise')
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'closure_convention', attval = 'last_node_equals_first')
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multipolygon')

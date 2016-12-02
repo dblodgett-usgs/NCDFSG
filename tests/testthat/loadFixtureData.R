@@ -16,6 +16,8 @@ multipolygonData <- readWKT(fixtureData[["2d"]]$multipolygon)
 multipolygon_holeData <- readWKT(fixtureData[["2d"]]$multipolygon_hole)
 multipolygons_holesData <- readWKT(fixtureData[["2d"]]$multipolygons_holes)
 multigeometries_polygons_holesData <- readWKT(paste0("GEOMETRYCOLLECTION(",fixtureData[["2d"]]$multipolygons_holes,", ",fixtureData[["2d"]]$multipolygon_hole,")"), id = c("1","2"))
+multigeometries_polygons_holesData <- readWKT(paste0("GEOMETRYCOLLECTION(",fixtureData[["2d"]]$multipolygons_holes,", ",fixtureData[["2d"]]$multipolygon_hole,")"), id = c("1","2"))
+
 
 saveRDS(multipointData,file="data/multiPointData.rds")
 saveRDS(pointData,file="data/pointData.rds")
