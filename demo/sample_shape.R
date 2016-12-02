@@ -1,5 +1,3 @@
-library(ncdf4)
-library(jsonlite)
 library(rgeos)
 library(NCDFSG)
 library(maptools)
