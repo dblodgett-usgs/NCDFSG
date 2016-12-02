@@ -55,6 +55,14 @@ checkNCDF <- function(nc) {
     coord_index_var<-unlist(unique(coord_index_var))
     if(length(coord_index_var)>1) {stop('only one geom_coordinates index is supported, this file has more than one.')}
     geom_type <- ncatt_get(nc, coord_index_var, attname = "geom_type")$value
+
+    val <- ncatt_get(nc, coord_index_var, 'multipart_break_value')
+    if(val$hasatt) multi_break_val <- val$value
+
+    val <- ncatt_get(nc, coord_index_var, 'hole_break_value')
+    if(val$hasatt) hole_break_val <- val$value
+
+    # Could also implement outer_ring_order and closure convention.
   }
 
   if(grepl("point", geom_type)) {
@@ -65,7 +73,7 @@ checkNCDF <- function(nc) {
     coord_index_var<-unique(coord_index_var)[[1]]
   }
 
-  if(grepl("multipolygon", geom_type) || grepl("multiline", geom_type)) {
+  if(grepl("polygon", geom_type) || grepl("line", geom_type)) {
 
     coord_index_stop_var<-list()
     for(dimen in c(names(nc$dim))) {
@@ -75,9 +83,6 @@ checkNCDF <- function(nc) {
 
     if(length(coord_index_stop_var)>1) {stop('only one contiquous ragged dimension index is supported, this file has more than one.')}
 
-    try(multi_break_val <- ncatt_get(nc, coord_index_var, 'multipart_break_value')$value)
-    try(hole_break_val <- ncatt_get(nc, coord_index_var, 'hole_break_value')$value)
-    # Could also implement outer_ring_order and closure convention.
   }
 
   if(nc$var[instance_id][[1]]$ndims == 1) {

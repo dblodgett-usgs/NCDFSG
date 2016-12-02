@@ -37,13 +37,25 @@ test_that("line", {
   expect_equal(instance_id, "instance_name")
   expect_equal(instanceDim, "instance")
   expect_equal(coord_index_var, "coordinate_index")
-  expect_equal(geom_type, "multiline")
-  # expect_equal(multi_break_val, -1) # need to fix this. See issue #2.
+  expect_equal(geom_type, "line")
   expect_equal(coord_index_stop_var, "coordinate_index_stop")
 })
 
-test_that("polygon", {
-  polygonData <- readRDS("data/polygonData.rds")
+test_that("line", {
+  lineData <- readRDS("data/multiLineData.rds")
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData)
+  nc<-nc_open(nc_file)
+
+  checkVals <- checkNCDF(nc)
+  multi_break_val<-checkVals$multi_break_val
+  geom_type<-checkVals$geom_type
+
+  expect_equal(geom_type, "multiline")
+  expect_equal(multi_break_val, -1)
+})
+
+test_that("multi polygon holes", {
+  polygonData <- readRDS("data/multipolygons_holes.rds")
   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
 
@@ -60,9 +72,24 @@ test_that("polygon", {
   expect_equal(instanceDim, "instance")
   expect_equal(coord_index_var, "coordinate_index")
   expect_equal(geom_type, "multipolygon")
-  # expect_equal(multi_break_val, -1)
-  # expect_equal(hole_break_val, -2) # need to fix.. see issue #2
+  expect_equal(multi_break_val, -1)
+  expect_equal(hole_break_val, -2)
   expect_equal(coord_index_stop_var, "coordinate_index_stop")
+})
+
+test_that("multi polygon holes", {
+  polygonData <- readRDS("data/polygonData.rds")
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
+  nc<-nc_open(nc_file)
+
+  checkVals <- checkNCDF(nc)
+  multi_break_val<-checkVals$multi_break_val
+  hole_break_val<-checkVals$hole_break_val
+  geom_type<-checkVals$geom_type
+
+  expect_equal(multi_break_val, NULL)
+  expect_equal(hole_break_val, NULL)
+  expect_equal(geom_type, "polygon")
 })
 
 test_that("errors", {

@@ -106,15 +106,24 @@ addGeomData<-function(nc_file, geomData, names) {
   ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'geometry_y_node')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_coordinates', attval = 'x y')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_dimension', attval = nc$dim$instance$name)
-  if (multis) ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'start_index', attval = 1)
   if(linesMode) {
-    ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multiline')
+    if (multis) {
+      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
+      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multiline')
+    } else {
+      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'line')
+      }
   } else {
     if (holes) ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'hole_break_value', attval = hole_break_val)
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'outer_ring_order', attval = 'anticlockwise')
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'closure_convention', attval = 'last_node_equals_first')
-    ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multipolygon')
+    if (multis) {
+      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multipolygon')
+      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
+    } else {
+      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'polygon')
+    }
   }
   ncatt_put(nc = nc, varid = 'coordinate_index_stop', attname = 'contiguous_ragged_dimension', attval = 'coordinate_index')
   ncatt_put(nc, 'instance_name','standard_name','instance_id')

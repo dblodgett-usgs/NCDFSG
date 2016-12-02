@@ -28,8 +28,8 @@ FromNCDFSG = function(nc_file) {
   geom_type<-checkVals$geom_type
 
   line<-FALSE; poly<-FALSE; point<-FALSE
-  if(grepl("multipolygon", geom_type)) { poly<-TRUE
-  } else if(grepl("multiline", geom_type)) { line<-TRUE
+  if(grepl("polygon", geom_type)) { poly<-TRUE
+  } else if(grepl("line", geom_type)) { line<-TRUE
   } else point <- TRUE
 
   if(point) {
