@@ -4,7 +4,8 @@
 \alias{addPoints}
 \title{Add points to a NetCDF-DSG File.}
 \usage{
-addPoints(nc_file, xCoords, yCoords, alts = NULL)
+addPoints(nc_file, xCoords, yCoords, alts = NULL,
+  instanceDimName = "instance")
 }
 \arguments{
 \item{nc_file}{A string file path to the nc file to be created.}
@@ -14,6 +15,8 @@ addPoints(nc_file, xCoords, yCoords, alts = NULL)
 \item{yCoords}{Vector of y coordinates in WGS84}
 
 \item{alts}{Vector of altitudes assumed to be height above mean sea level}
+
+\item{instanceDimName}{A string to name the instance dimension.  Defaults to "instance"}
 }
 \description{
 Adds x and y coordinates to a NetCDF-DSG dataset following the timeSeries featureType pattern.

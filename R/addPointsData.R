@@ -4,6 +4,7 @@
 #'@param xCoords Vector of x coordinates in WGS84
 #'@param yCoords Vector of y coordinates in WGS84
 #'@param alts Vector of altitudes assumed to be height above mean sea level
+#'@param instanceDimName A string to name the instance dimension.  Defaults to "instance"
 #'
 #'@description
 #'Adds x and y coordinates to a NetCDF-DSG dataset following the timeSeries featureType pattern.
@@ -14,14 +15,14 @@
 #'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
 #'
 #'@export
-addPoints<-function(nc_file,xCoords,yCoords,alts=NULL) {
+addPoints <- function(nc_file, xCoords, yCoords, alts = NULL, instanceDimName = "instance") {
   nc<-nc_open(nc_file, write = TRUE)
   n<-length(xCoords)
-  lat_var 		= ncvar_def('lat', 'degrees_north', dim=nc$dim$instance, -999, prec='double', longname = 'latitude of the observation')
-  lon_var 		= ncvar_def('lon', 'degrees_east', dim=nc$dim$instance, -999, prec='double', longname = 'longitude of the observation')
+  lat_var 		= ncvar_def('lat', 'degrees_north', dim=nc$dim[instanceDimName], -999, prec='double', longname = 'latitude of the observation')
+  lon_var 		= ncvar_def('lon', 'degrees_east', dim=nc$dim[instanceDimName], -999, prec='double', longname = 'longitude of the observation')
 
   if(!is.null(alts[1])){
-    alt_var = ncvar_def('alt', 'm', dim=nc$dim$instance, missval=-999, prec='double', longname='height above mean sea level')
+    alt_var = ncvar_def('alt', 'm', dim=nc$dim[instanceDimName], missval=-999, prec='double', longname='height above mean sea level')
   }
 
   nc <- ncvar_add(nc, lat_var)

@@ -2,6 +2,7 @@
 #'
 #'@param ncFile A string file path to the nc file to be created. It must already have an instance dimension.
 #'@param attData A \code{data.frame} as included in a spatial dataFrame.
+#'@param instanceDimName A string to name the instance dimension. Defaults to "instance"
 
 #'@description
 #'Creates a NetCDF file with an instance dimension, and any attributes from a data frame.
@@ -15,16 +16,15 @@
 #'@importFrom methods is
 #'
 #'@export
-write_instance_data <- function(ncFile, attData) {
+write_instance_data <- function(ncFile, attData, instanceDimName = "instance") {
 
   n <- nrow(attData)
-  # 'instance' is used to be consistent with the CF specification which calls the geometries, or features, instances.
-  instance_dim <- ncdim_def('instance', '', 1:n, create_dimvar=FALSE)
+
+  instance_dim <- ncdim_def(instanceDimName, '', 1:n, create_dimvar=FALSE)
 
   vars<-list()
   types <- list(numeric="double", integer = "integer", character="char")
 
-  # Convert any dates to character. This could be improved later.
   i <- sapply(attData, is, class2 = "Date")
   attData[i] <- lapply(attData[i], as.character)
 

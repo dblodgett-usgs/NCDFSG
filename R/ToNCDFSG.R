@@ -69,18 +69,20 @@ ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL
     stop('station_names and alts must all be vectors of the same length')
   }
 
+  instanceDimName <- "instance"
+
   if(exists("attData")) {
     itemp <- sapply(attData, is.factor)
     attData[itemp] <- lapply(attData[itemp], as.character)
     instance_names<-as.data.frame(list(instance_name=instance_names), stringsAsFactors = FALSE)
     attData<-cbind(instance_names,attData)
-    nc_file <- write_instance_data(nc_file, attData)
+    nc_file <- write_instance_data(nc_file, attData, instanceDimName)
   } else {
     instance_names<-as.data.frame(list(instance_name=instance_names), stringsAsFactors = FALSE)
-    nc_file <- write_instance_data(nc_file, instance_names)
+    nc_file <- write_instance_data(nc_file, instance_names, instanceDimName)
   }
 
-  if(!pointsMode) nc_file <- addGeomData(nc_file, geomData)
+  if(!pointsMode) nc_file <- addGeomData(nc_file, geomData, instanceDimName)
 
   if(pointsMode) nc_file <- addPoints(nc_file, xCoords, yCoords, alts)
 
