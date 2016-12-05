@@ -11,6 +11,7 @@
 #'
 #'@importFrom ncdf4 nc_open nc_close ncvar_get ncatt_get
 #'@importFrom sp Polygon Polygons SpatialPolygons SpatialPolygonsDataFrame CRS Line Lines SpatialLines SpatialLinesDataFrame SpatialPointsDataFrame
+#'@importFrom netcdf.dsg read_instance_data
 #'
 #'@export
 FromNCDFSG = function(nc_file) {

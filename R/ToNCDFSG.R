@@ -19,6 +19,7 @@
 #'
 #'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
 #'@importFrom sp SpatialLinesDataFrame polygons
+#'@importFrom netcdf.dsg write_instance_data
 #'
 #'@export
 ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL, lons = NULL, alts=NULL){
