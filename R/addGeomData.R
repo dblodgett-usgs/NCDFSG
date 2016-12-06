@@ -100,8 +100,10 @@ addGeomData<-function(nc_file, geomData, instanceDimName = "instance") {
   ncvar_put(nc = nc, varid = 'coordinate_index', vals = ragged_ind)
   ncvar_put(nc = nc, varid = 'coordinate_index_stop', vals = ragged_index_stop_vals)
 
-  ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'geometry_x_node')
-  ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'geometry_y_node')
+  ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'longitude')
+  ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'latitude')
+  ncatt_put(nc = nc, varid = 'x', attname = 'axis', attval = 'X')
+  ncatt_put(nc = nc, varid = 'y', attname = 'axis', attval = 'Y')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_coordinates', attval = 'x y')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_dimension', attval = instanceDimName)
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'start_index', attval = 1)
