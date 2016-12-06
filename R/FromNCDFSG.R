@@ -103,8 +103,3 @@ FromNCDFSG = function(nc_file) {
   nc_close(nc)
   return(SPGeom)
 }
-
-# found here: http://stackoverflow.com/questions/26220913/replace-na-with-na
-make.true.NA <- function(x) if(is.character(x)||is.factor(x)){
-  is.na(x) <- x=="NA"; x} else {
-    x}
