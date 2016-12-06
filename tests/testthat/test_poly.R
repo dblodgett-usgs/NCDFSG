@@ -2,7 +2,7 @@ library(ncdf4)
 
 context("NCDF SG polygon tests")
 
-test_that("polygon_timeSeries for basic polygon", {
+test_that("data for basic polygon", {
   polygonData <- readRDS("data/polygonData.rds")
   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
@@ -21,8 +21,16 @@ test_that("polygon_timeSeries for basic polygon", {
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"geometry_y_node")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_dimension")$value,"instance")
+  expect_equivalent(ncatt_get(nc,varid="coordinate_index",attname = "geom_type")$value,"polygon")
+  expect_equivalent(ncatt_get(nc,varid="coordinate_index",
+                              attname = "closure_convention")$value,"last_node_equals_first")
+  expect_equivalent(ncatt_get(nc,varid="coordinate_index",
+                              attname = "outer_ring_order")$value,"clockwise")
+  expect_equivalent(ncatt_get(nc,varid="coordinate_index",
+                              attname = "start_index")$value,1)
   returnPolyData<-FromNCDFSG(nc_file)
   compareSP(polygonData, returnPolyData)
+  expect_equal(polygonData@polygons[[1]]@Polygons[[1]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[1]]@ringDir)
 })
 
 test_that("still works when missing geom_dimension", {
@@ -46,6 +54,8 @@ test_that("polygon_timeSeries for polygon with a hole.", {
   expect_equal(length(nc$dim$coordinate_index$vals), 10)
   returnPolyData<-FromNCDFSG(nc_file)
   compareSP(polygonData, returnPolyData)
+  expect_equal(polygonData@polygons[[1]]@Polygons[[1]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[1]]@ringDir)
+  expect_equal(polygonData@polygons[[1]]@Polygons[[2]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[2]]@ringDir)
 })
 
 test_that("polygon_timeSeries for multipolygon.", {

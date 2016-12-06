@@ -3,6 +3,8 @@ compareSP <- function(polygonData, returnPolyData) {
   for(i in 1:length(length(polygonData@polygons[[1]]@Polygons))) {
     expect_equal(as.numeric(returnPolyData@polygons[[1]]@Polygons[[i]]@coords),
                  as.numeric(polygonData@polygons[[1]]@Polygons[[i]]@coords))
+    expect_equal(as.numeric(returnPolyData@polygons[[1]]@Polygons[[i]]@ringDir),
+                 as.numeric(polygonData@polygons[[1]]@Polygons[[i]]@ringDir))
     # expect_equal(polygonData@polygons[[1]]@Polygons[[i]], returnPolyData@polygons[[1]]@Polygons[[i]]) # checks attributes, not sure it's work testing them.
   }
   expect_equal(polygonData@polygons[[1]]@area, returnPolyData@polygons[[1]]@area)

@@ -114,7 +114,7 @@ addGeomData<-function(nc_file, geomData, instanceDimName = "instance") {
       }
   } else {
     if (holes) ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'hole_break_value', attval = hole_break_val)
-    ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'outer_ring_order', attval = 'anticlockwise')
+    ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'outer_ring_order', attval = 'clockwise')
     ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'closure_convention', attval = 'last_node_equals_first')
     if (multis) {
       ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multipolygon')
