@@ -1,5 +1,22 @@
 context("NCDF check NC tests")
 
+test_that("instance var is found right", {
+  nc <- nc_open("data/test_int_instance.nc")
+
+  checkVals <- checkNCDF(nc)
+  instance_id<-checkVals$instance_id
+  instanceDim<-checkVals$instanceDim
+  coord_index_var<-checkVals$coord_index_var
+  coord_index_stop_var<-checkVals$coord_index_stop_var
+  multi_break_val<-checkVals$multi_break_val
+  hole_break_val<-checkVals$hole_break_val
+  geom_type<-checkVals$geom_type
+
+  expect_equal(instance_id, "instance_name")
+  expect_equal(coord_index_var, "coordinate_index")
+  expect_equal(instanceDim, "instance")
+})
+
 test_that("point", {
   multipointData <- readRDS("data/pointData.rds")
   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = multipointData)
