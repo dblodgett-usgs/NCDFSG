@@ -14,8 +14,6 @@ test_that("linedata works", {
   expect_equivalent(ncatt_get(nc,varid="instance_name","standard_name")$value,"instance_id")
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"longitude")
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"latitude")
-  expect_equivalent(ncatt_get(nc,varid="x","axis")$value,"X")
-  expect_equivalent(ncatt_get(nc,varid="y","axis")$value,"Y")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")
   expect_equal(ncatt_get(nc,varid="coordinate_index",attname = "start_index")$value,1)
   returnLineData<-FromNCDFSG(nc_file)
