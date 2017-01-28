@@ -148,4 +148,8 @@ test_that("errors", {
   nc <- nc_open(nc_file, write = TRUE)
   ncatt_put(nc, nc$var$lat, "standard_name", "garbage")
   expect_warning(checkNCDF(nc), "instance dimension is being inferred based on an assumption of dimension order of the character instance_id and may not be correct.")
+
+  nc <- nc_open("data/borked_featureType.nc")
+
+  expect_warning(checkNCDF(nc), "File does not have a featureType declaration, unexpected behavior may result.")
 })
