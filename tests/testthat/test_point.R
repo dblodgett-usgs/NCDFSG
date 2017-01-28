@@ -11,6 +11,8 @@ test_that("Point_timeSeries", {
   expect_equal(nc$dim$instance$vals,c(1))
   expect_equal(as.numeric(ncvar_get(nc,'lat')),as.numeric(multipointData@coords[,2]))
   expect_equal(as.numeric(ncvar_get(nc,'lon')),as.numeric(multipointData@coords[,1]))
+  expect_equal(ncatt_get(nc,varid="lon","cf_role")$value,"geometry_x_node")
+  expect_equal(ncatt_get(nc,varid="lat","cf_role")$value,"geometry_y_node")
   expect_equivalent(ncatt_get(nc,varid=0,"Conventions")$value,"CF-1.7")
   expect_equivalent(ncatt_get(nc,varid="instance_name","standard_name")$value,"station_id")
   expect_equivalent(ncatt_get(nc,varid="lat","standard_name")$value,"latitude")

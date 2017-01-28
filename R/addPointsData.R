@@ -43,6 +43,9 @@ addPoints <- function(nc_file, xCoords, yCoords, alts = NULL, instanceDimName = 
   ncatt_put(nc, 'lat', 'standard_name', 'latitude')
   ncatt_put(nc, 'lon', 'standard_name', 'longitude')
 
+  ncatt_put(nc = nc, varid = 'lon', attname = 'cf_role', attval = 'geometry_x_node')
+  ncatt_put(nc = nc, varid = 'lat', attname = 'cf_role', attval = 'geometry_y_node')
+
   if(!is.null(alts[1])){
     ncatt_put(nc, 'alt', 'standard_name', 'height')
   }

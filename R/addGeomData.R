@@ -102,6 +102,8 @@ addGeomData<-function(nc_file, geomData, instanceDimName = "instance") {
 
   ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'longitude')
   ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'latitude')
+  ncatt_put(nc = nc, varid = 'x', attname = 'cf_role', attval = 'geometry_x_node')
+  ncatt_put(nc = nc, varid = 'y', attname = 'cf_role', attval = 'geometry_y_node')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_coordinates', attval = 'x y')
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_dimension', attval = instanceDimName)
   ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'start_index', attval = 1)
