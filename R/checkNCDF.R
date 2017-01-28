@@ -24,12 +24,15 @@ checkNCDF <- function(nc) {
   multi_break_val<-NULL
   hole_break_val<-NULL
 
-  # Assume geom_type is point
-  geom_type<-"point"
-
   # Check important global atts
   if(!grepl('CF',ncatt_get(nc,0,'Conventions')$value)) {
     warning('File does not advertise CF conventions, unexpected behavior may result.')}
+
+  if(!grepl('geometry',ncatt_get(nc,0,'featureType')$value) && !grepl('timeSeries',ncatt_get(nc,0,'featureType')$value, ignore.case = TRUE)) {
+    warning('File does not have a featureType declaration, unexpected behavior may result.')}
+
+  # Assume geom_type is point
+  geom_type<-"point"
 
   # Look for variable with the timeseries_id in it.
   instance_id<-list()

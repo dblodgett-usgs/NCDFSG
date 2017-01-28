@@ -15,6 +15,7 @@ test_that("data for basic polygon", {
   expect_equal(as.numeric(ncvar_get(nc,'coordinate_index_stop')),
                length(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]))
   expect_equivalent(ncatt_get(nc,varid=0,"Conventions")$value,"CF-1.8")
+  expect_equivalent(ncatt_get(nc,varid=0,"featureType")$value,"geometry")
   expect_equal(ncatt_get(nc,varid="coordinate_index",attname = "start_index")$value,1)
   expect_equivalent(ncatt_get(nc,varid="instance_name","standard_name")$value,"instance_id")
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"longitude")

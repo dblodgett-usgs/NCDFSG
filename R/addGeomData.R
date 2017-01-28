@@ -128,6 +128,7 @@ addGeomData<-function(nc_file, geomData, instanceDimName = "instance") {
   ncatt_put(nc = nc, varid = 'coordinate_index_stop', attname = 'contiguous_ragged_dimension', attval = 'coordinate_index')
   ncatt_put(nc, 'instance_name','standard_name','instance_id')
   #Important Global Variables
+  ncatt_put(nc, 0,'featureType','geometry')
   ncatt_put(nc, 0,'Conventions','CF-1.8')
 
   nc_close(nc)

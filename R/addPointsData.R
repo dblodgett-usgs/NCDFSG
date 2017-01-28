@@ -55,7 +55,8 @@ addPoints <- function(nc_file, xCoords, yCoords, alts = NULL, instanceDimName = 
 
 
   #Important Global Variables
-  ncatt_put(nc, 0,'Conventions','CF-1.7')
+  ncatt_put(nc, 0,'Conventions','CF-1.8')
+  ncatt_put(nc, 0,'featureType','geometry')
   nc_close(nc)
   return(nc_file)
 }

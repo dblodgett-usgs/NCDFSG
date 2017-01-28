@@ -13,6 +13,7 @@ test_that("linedata works", {
   expect_equal(ncatt_get(nc,varid="x","cf_role")$value,"geometry_x_node")
   expect_equal(ncatt_get(nc,varid="y","cf_role")$value,"geometry_y_node")
   expect_equivalent(ncatt_get(nc,varid=0,"Conventions")$value,"CF-1.8")
+  expect_equivalent(ncatt_get(nc,varid=0,"featureType")$value,"geometry")
   expect_equivalent(ncatt_get(nc,varid="instance_name","standard_name")$value,"instance_id")
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,"longitude")
   expect_equivalent(ncatt_get(nc,varid="y","standard_name")$value,"latitude")
