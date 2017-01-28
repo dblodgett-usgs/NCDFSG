@@ -23,7 +23,6 @@ test_that("data for basic polygon", {
   expect_equal(ncatt_get(nc,varid="x","cf_role")$value,"geometry_x_node")
   expect_equal(ncatt_get(nc,varid="y","cf_role")$value,"geometry_y_node")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_coordinates")$value,"x y")
-  expect_equivalent(ncatt_get(nc,varid="coordinate_index","geom_dimension")$value,"instance")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index",attname = "geom_type")$value,"polygon")
   expect_equivalent(ncatt_get(nc,varid="coordinate_index",
                               attname = "closure_convention")$value,"last_node_equals_first")
@@ -35,12 +34,6 @@ test_that("data for basic polygon", {
   compareSP(polygonData, returnPolyData)
   expect_equal(polygonData@polygons[[1]]@Polygons[[1]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[1]]@ringDir)
 })
-
-test_that("still works when missing geom_dimension", {
-  polygonData <- readRDS("data/polygonData.rds")
-  returnPolyData<-FromNCDFSG("data/borked_geom_dimension.nc")
-  compareSP(polygonData, returnPolyData)
-  })
 
 test_that("polygon_timeSeries for polygon with a hole.", {
   polygonData <- readRDS("data/polygon_holeData.rds")

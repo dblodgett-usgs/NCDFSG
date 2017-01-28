@@ -88,15 +88,8 @@ checkNCDF <- function(nc) {
 
   }
 
-  tryAtt <- FALSE
-  if(!is.null(coord_index_var)) {
-    tryAtt <- ncatt_get(nc, coord_index_var, attname = "geom_dimension")
-  }
-
   if(nc$var[instance_id][[1]]$ndims == 1) {
     instanceDim <- nc$var[instance_id][[1]]$dim[[1]]$name
-  } else if(tryAtt$hasatt) {
-    instanceDim <- tryAtt$value
   } else if(!is.null(coord_index_stop_var)) {
     instanceDim <- nc$var[coord_index_stop_var][[1]]$dim[[1]]$name
   }
