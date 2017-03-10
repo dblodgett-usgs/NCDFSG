@@ -4,7 +4,7 @@
 #'@param nc_file A string file path to the nc file to be created. It must already have an instance dimension.
 #'@param geomData An object of class \code{SpatialLines} or \code{SpatialPolygons} with WGS84 lon in the x coordinate and lat in the y coordinate.
 #'Note that three dimensional geometries is not supported.
-#'@param instanceDimName A string to name the instance dimension.  Defaults to "instance"
+#'@param geomDimName A string to name the instance dimension.  Defaults to "instance"
 
 #'@description
 #'Creates a file with point, line or polygon instance data ready for the extended NetCDF-CF timeSeries featuretype format.
@@ -16,11 +16,9 @@
 #'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
 #'
 #'@export
-addGeomData<-function(nc_file, geomData, instanceDimName = "instance") {
+addGeomData<-function(nc_file, geomData, geomDimName) {
 
-  hole_break_val <- -2
   holes <- FALSE
-  multi_break_val <- -1
   multis <- FALSE
 
   linesMode<-FALSE
@@ -84,50 +82,42 @@ addGeomData<-function(nc_file, geomData, instanceDimName = "instance") {
 
   nc <- nc_open(nc_file,write = TRUE)
 
-  coordinate_index_dim<-ncdim_def('coordinate_index', '', 1:length(ragged_ind), create_dimvar = FALSE)
-  coordinate_index_var<-ncvar_def(name = 'coordinate_index', units = '', dim = coordinate_index_dim,
-                                  longname = "ragged index for coordinates and geometry break values", prec = "integer")
+  # coordinate_index_dim<-ncdim_def('geom_container', '', 1:length(ragged_ind), create_dimvar = FALSE)
+  # coordinate_index_var<-ncvar_def(name = 'geom_container', units = '', dim = coordinate_index_dim,
+  #                                 longname = "ragged index for coordinates and geometry break values", prec = "integer")
+  #
+  # coordinate_index_stop_var<-ncvar_def(name = 'coordinate_index_stop', units = '', dim = nc$dim[geomDimName],
+  #                                      longname = "index for last coordinate in each instance geometry", prec = "integer")
 
-  coordinate_index_stop_var<-ncvar_def(name = 'coordinate_index_stop', units = '', dim = nc$dim[instanceDimName],
-                                       longname = "index for last coordinate in each instance geometry", prec = "integer")
-
-  nc <- ncvar_add(nc,coordinate_index_var)
-  nc <- ncvar_add(nc,coordinate_index_stop_var)
+  # nc <- ncvar_add(nc,coordinate_index_var)
+  # nc <- ncvar_add(nc,coordinate_index_stop_var)
   nc <- ncvar_add(nc,xVar)
   nc <- ncvar_add(nc,yVar)
   ncvar_put(nc = nc, varid = 'x', vals = xVals)
   ncvar_put(nc = nc, varid = 'y', vals = yVals)
-  ncvar_put(nc = nc, varid = 'coordinate_index', vals = ragged_ind)
-  ncvar_put(nc = nc, varid = 'coordinate_index_stop', vals = ragged_index_stop_vals)
+  # ncvar_put(nc = nc, varid = 'geom_container', vals = ragged_ind)
+  # ncvar_put(nc = nc, varid = 'coordinate_index_stop', vals = ragged_index_stop_vals)
 
   ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'longitude')
   ncatt_put(nc = nc, varid = 'y', attname = 'standard_name', attval = 'latitude')
   ncatt_put(nc = nc, varid = 'x', attname = 'cf_role', attval = 'geometry_x_node')
   ncatt_put(nc = nc, varid = 'y', attname = 'cf_role', attval = 'geometry_y_node')
-  ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_coordinates', attval = 'x y')
-  ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'start_index', attval = 1)
+  ncatt_put(nc = nc, varid = 'geom_container', attname = 'node_coordinates', attval = 'x y')
   if(linesMode) {
     if (multis) {
-      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
-      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multiline')
+      ncatt_put(nc = nc, varid = 'geom_container', attname = 'geom_type', attval = 'multiline')
     } else {
-      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'line')
+      ncatt_put(nc = nc, varid = 'geom_container', attname = 'geom_type', attval = 'line')
       }
   } else {
-    if (holes) ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'hole_break_value', attval = hole_break_val)
-    ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'outer_ring_order', attval = 'clockwise')
-    ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'closure_convention', attval = 'last_node_equals_first')
+    if (holes) ncatt_put(nc = nc, varid = 'geom_container', attname = 'hole_break_value', attval = hole_break_val)
     if (multis) {
-      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'multipolygon')
-      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'multipart_break_value', attval = multi_break_val)
+      ncatt_put(nc = nc, varid = 'geom_container', attname = 'geom_type', attval = 'multipolygon')
     } else {
-      ncatt_put(nc = nc, varid = 'coordinate_index', attname = 'geom_type', attval = 'polygon')
+      ncatt_put(nc = nc, varid = 'geom_container', attname = 'geom_type', attval = 'polygon')
     }
   }
-  ncatt_put(nc = nc, varid = 'coordinate_index_stop', attname = 'contiguous_ragged_dimension', attval = 'coordinate_index')
-  ncatt_put(nc, 'instance_name','standard_name','instance_id')
   #Important Global Variables
-  ncatt_put(nc, 0,'featureType','geometry')
   ncatt_put(nc, 0,'Conventions','CF-1.8')
 
   nc_close(nc)
