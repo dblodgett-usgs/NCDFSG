@@ -23,24 +23,22 @@ compareSL <- function(lineData, returnLineData) {
   # expect_equal(lineData@lines[[1]]@ID, returnLineData@lines[[1]]@ID) # maptools 0 indexes others 1 index. Not roundtripping this yet.
 }
 
-checkAllPoly <- function(nc, polygonData, ragged_index, stop_indices) {
-  i<-0
-  j<-0
+checkAllPoly <- function(polygonData, node_count, part_node_count = NULL, part_type = NULL) {
+  i<-1 # counter for parts
   for(g in 1:length(polygonData@polygons)) {
+    j<-0 # counter for coords in a geom
     for(p in 1:length(polygonData@polygons[[g]]@Polygons)) {
       if(p>1) {
         i<-i+1
         if(polygonData@polygons[[g]]@Polygons[[p]]@hole) {
-          expect_equal(ragged_index[i], -2)
-        } else {expect_equal(ragged_index[i], -1) }
+          expect_equal(part_type[i], -2)
+        } else {expect_equal(part_type[i], -1) }
       }
-      for(c in 1:length(polygonData@polygons[[g]]@Polygons[[p]]@coords[,1])){
-        i<-i+1
-        j<-j+1
-        expect_equal(ragged_index[i],j)
-      }
+      pCount <- length(polygonData@polygons[[g]]@Polygons[[p]]@coords[,1])
+      expect_equal(part_node_count[i],
+                   pCount)
+      j <- j + pCount
     }
-    expect_equal(ragged_index[stop_indices[g]],j)
-    expect_equal(stop_indices[g], i)
+    expect_equal(node_count[g],j)
   }
 }
