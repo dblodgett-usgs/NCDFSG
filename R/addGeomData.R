@@ -29,7 +29,7 @@ addGeomData<-function(nc_file, geomData, instanceDimName) {
 
   node_count <- c()
   part_node_count <- c()
-  part_type <- c(pkg.env$multi_val) # First is always an outside ring.
+  part_type <- c() # First is always an outside ring.
   xVals<-c()
   yVals<-c()
   for(geom in 1:length(geomData)) {
@@ -45,6 +45,8 @@ addGeomData<-function(nc_file, geomData, instanceDimName) {
           part_type <- c(part_type, pkg.env$multi_val)
           multis <- TRUE
         }
+      } else {
+        part_type <- c(part_type, pkg.env$multi_val)
       }
       coords<-gData[[part]]@coords
       pCount <- length(coords[,1])
