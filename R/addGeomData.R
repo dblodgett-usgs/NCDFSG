@@ -18,20 +18,39 @@
 #'@export
 addGeomData<-function(nc_file, geomData, instanceDimName) {
 
-  holes <- FALSE
-  multis <- FALSE
-
-  linesMode<-FALSE
+  linesMode <- FALSE
+  pointsMode <- FALSE
 
   if(class(geomData) == "SpatialLines" || class(geomData) == "SpatialLinesDataFrame") {
     linesMode<-TRUE
   }
 
+  if(class(geomData) == "SpatialPoints" || class(geomData) == "SpatialPointsDataFrame") {
+    pointsMode <- TRUE
+    xCoords<-geomData@coords[,1]
+    yCoords<-geomData@coords[,2]
+  }
+
+  holes <- FALSE
+  multis <- FALSE
   node_count <- c()
   part_node_count <- c()
   part_type <- c() # First is always an outside ring.
   xVals<-c()
   yVals<-c()
+
+  if(pointsMode) {
+    ids <- attributes(geomData@coords)$dimnames[[1]]
+    uIds <- unique(ids)
+    if(length(ids) != length(uIds)) {
+      multis <- TRUE
+      for(id in uIds) {
+        node_count <- c(node_count, length(which(ids == id)))
+      }
+    }
+    xVals <- geomData@coords[,1]
+    yVals <- geomData@coords[,2]
+  } else {
   for(geom in 1:length(geomData)) {
     nCount <- 0
     if(linesMode) { gData <- geomData@lines[[geom]]@Lines
@@ -57,7 +76,7 @@ addGeomData<-function(nc_file, geomData, instanceDimName) {
     }
     node_count <- c(node_count, nCount)
   }
-
+  }
   nc <- nc_open(nc_file,write = TRUE)
 
   node_dim<-ncdim_def(pkg.env$node_dim_name, '', 1:length(xVals), create_dimvar=FALSE)
@@ -78,7 +97,13 @@ addGeomData<-function(nc_file, geomData, instanceDimName) {
   nc_close(nc)
   nc <- nc_open(nc_file,write = TRUE)
 
-  if(linesMode) {
+  if(pointsMode) {
+    if (multis) {
+      ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$geom_type_attr_name, attval = 'multipoint')
+    } else {
+      ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$geom_type_attr_name, attval = 'point')
+    }
+  } else if(linesMode) {
     if (multis) {
       ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$geom_type_attr_name, attval = 'multiline')
     } else {
@@ -91,15 +116,17 @@ addGeomData<-function(nc_file, geomData, instanceDimName) {
       ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$geom_type_attr_name, attval = 'polygon')
     }
   }
-  ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$node_count_attr_name, attval = pkg.env$node_count_var_name)
+  if(!(pointsMode && !multis)) {
+    ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$node_count_attr_name, attval = pkg.env$node_count_var_name)
+    node_count_var<-ncvar_def(name = pkg.env$node_count_var_name, units = '', dim = nc$dim[instanceDimName],
+                              longname = "count of coordinates in each instance geometry", prec = "integer")
+    nc <- ncvar_add(nc, node_count_var)
+    ncvar_put(nc = nc, varid = pkg.env$node_count_var_name, vals = node_count)
+  }
+
   ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$node_coordinates, attval = 'x y')
 
-  node_count_var<-ncvar_def(name = pkg.env$node_count_var_name, units = '', dim = nc$dim[instanceDimName],
-                            longname = "count of coordinates in each instance geometry", prec = "integer")
-  nc <- ncvar_add(nc, node_count_var)
-  ncvar_put(nc = nc, varid = pkg.env$node_count_var_name, vals = node_count)
-
-  if(multis || holes) {
+  if(!pointsMode && (multis || holes)) {
     part_node_count_dim<-ncdim_def(pkg.env$part_dim_name, '', 1:length(part_node_count), create_dimvar = FALSE)
     part_node_count_var<-ncvar_def(name = pkg.env$part_node_count_var_name, units = '', dim = part_node_count_dim,
                                     longname = "count of nodes in each geometry part", prec = "integer")

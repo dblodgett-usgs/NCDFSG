@@ -18,16 +18,20 @@
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
 #'
 #'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
-#'@importFrom sp SpatialLinesDataFrame polygons
+#'@importFrom sp SpatialLinesDataFrame polygons SpatialPoints
 #'@importFrom netcdf.dsg write_instance_data
 #'
 #'@export
-ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL, lons = NULL, alts=NULL){
+ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL, lons = NULL){
 
   pointsMode <- FALSE
 
   if(is.null(instance_names) && !is.null(geomData)) {
-    instance_names<-as.character(c(1:length(geomData)))
+    if(class(geomData)=="SpatialPoints" || class(geomData)=="SpatialPointsDataFrame") {
+      instance_names <- as.character(unique(attributes(geomData@coords)$dimnames[[1]]))
+    } else {
+      instance_names <- as.character(c(1:length(geomData)))
+    }
   }
 
   if(class(geomData) == "SpatialPolygonsDataFrame") {
@@ -41,33 +45,21 @@ ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL
     geomData<-SpatialLinesDataFrame(geomData,data=as.data.frame(instance_names,stringsAsFactors = FALSE))
   } else if(class(geomData) == "SpatialPoints") {
     pointsMode<-TRUE
-    xCoords<-geomData@coords[,1]
-    yCoords<-geomData@coords[,2]
   } else if(class(geomData) == "SpatialPointsDataFrame") {
     pointsMode<-TRUE
     attData<-geomData@data
-    xCoords<-geomData@coords[,1]
-    yCoords<-geomData@coords[,2]
   } else if(!is.null(lats)) {
     pointsMode<-TRUE
-    xCoords<-lons
-    yCoords<-lats
+    geomData <- SpatialPoints(as.data.frame(list(x=lons, y=lats)),proj4string = CRS("+proj=longlat +ellps=WGS84"))
     if(is.null(instance_names)) {
-      instance_names<-as.character(c(1:length(xCoords)))
-    }
-    if(length(yCoords)!=length(instance_names) || length(xCoords)!=length(instance_names)){
-      stop('station_names, lats, and lons must all be vectors of the same length')
+      instance_names<-as.character(c(1:length(lats)))
     }
   } else {
     stop("Did not find supported spatial data.")
   }
 
-  if(!is.null(geomData)) {
+  if(!pointsMode && !is.null(geomData)) {
     if(length(instance_names)!=length(geomData)) stop('instance_names must be same length as data')
-  }
-
-  if(!is.null(alts[1]) && length(alts)!=length(instance_names)) {
-    stop('station_names and alts must all be vectors of the same length')
   }
 
   instanceDimName <- "instance"
@@ -83,9 +75,7 @@ ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL
     nc_file <- write_instance_data(nc_file, instance_names, instanceDimName)
   }
 
-  if(!pointsMode) nc_file <- addGeomData(nc_file, geomData, instanceDimName)
-
-  if(pointsMode) nc_file <- addPoints(nc_file, xCoords, yCoords, alts)
+  nc_file <- addGeomData(nc_file, geomData, instanceDimName)
 
   return(nc_file)
 }
