@@ -8,7 +8,6 @@
 #'Note that three dimensional geometries is not supported.
 #'@param lats Vector of WGS84 latitudes
 #'@param lons Vector of WGS84 longitudes
-#'@param alts Vector of altitudes assumed to be height above mean sea level
 #'
 #'@description
 #'Creates a file with point, line or polygon instance data ready for the extended NetCDF-CF timeSeries featuretype format.

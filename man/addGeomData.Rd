@@ -4,7 +4,7 @@
 \alias{addGeomData}
 \title{Put geometry data in a NetCDF-CF File}
 \usage{
-addGeomData(nc_file, geomData, instanceDimName = "instance")
+addGeomData(nc_file, geomData, instanceDimName)
 }
 \arguments{
 \item{nc_file}{A string file path to the nc file to be created. It must already have an instance dimension.}
@@ -21,4 +21,3 @@ Will also add attributes if a sp dataframe object is passed in.
 \references{
 https://github.com/bekozi/netCDF-CF-simple-geometry
 }
-

@@ -15,4 +15,3 @@ Attemps to convert a NetCDF-CF DSG Simple Geometry file into an sp object.
 \references{
 https://github.com/bekozi/netCDF-CF-simple-geometry
 }
-

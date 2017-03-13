@@ -5,7 +5,7 @@
 \title{Convert sp objects to NetCDF}
 \usage{
 ToNCDFSG(nc_file, geomData = NULL, instance_names = NULL, lats = NULL,
-  lons = NULL, alts = NULL)
+  lons = NULL)
 }
 \arguments{
 \item{nc_file}{A string file path to the nc file to be created.}
@@ -19,8 +19,6 @@ Note that three dimensional geometries is not supported.}
 \item{lats}{Vector of WGS84 latitudes}
 
 \item{lons}{Vector of WGS84 longitudes}
-
-\item{alts}{Vector of altitudes assumed to be height above mean sea level}
 }
 \description{
 Creates a file with point, line or polygon instance data ready for the extended NetCDF-CF timeSeries featuretype format.
@@ -29,4 +27,3 @@ Will also add attributes if a sp dataframe object is passed in.
 \references{
 https://github.com/bekozi/netCDF-CF-simple-geometry
 }
-

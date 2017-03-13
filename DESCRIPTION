@@ -4,7 +4,6 @@ Title: NetCDF-CF Simple Geometries
 Imports:
   ncdf4,
   sp,
-  methods,
   netcdf.dsg
 Depends:
   R (>= 3.0)
@@ -18,4 +17,4 @@ Authors@R: c( person("David", "Blodgett", role = c("aut", "cre"),
 Description: An R package to draft a reference implementation of the proposed NetCDF-CF simple geometries specification.
 License: CC0
 LazyData: TRUE
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
