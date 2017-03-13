@@ -65,7 +65,10 @@ checkNCDF <- function(nc) {
   instance_id<-unlist(unique(instance_id))
   if(length(instance_id)>1) { stop('multiple timeseries id variables were found.') }
 
-  instanceDim <- nc$var[geom_container$node_count][[1]]$dim[[1]]$name
+  if(geom_container$node_count == 0) {
+    instanceDim <- nc$var[geom_container$x][[1]]$dim[[1]]$name
+  } else {
+    instanceDim <- nc$var[geom_container$node_count][[1]]$dim[[1]]$name }
 
   return(list(instance_id = instance_id,
               instanceDim = instanceDim,

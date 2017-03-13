@@ -10,7 +10,7 @@ test_that("A dataframe can be round tripped to netCDF.", {
   expect_equal(as.character(ncvar_get(nc, nc$var$COMID)), as.character(dataFrame$COMID))
   expect_equal(as.character(ncvar_get(nc, nc$var$FDATE)), as.character(dataFrame$FDATE))
   expect_equal(as.numeric(ncvar_get(nc, nc$var$SHAPE_LENG)), as.numeric(dataFrame$SHAPE_LENG))
-  returnDataFrame <- read_instance_data(nc, "instance")
+  returnDataFrame <- read_instance_data(nc, pkg.env$instance_dim_name)
   i <- sapply(dataFrame, is, class2 = "Date")
   dataFrame[i] <- lapply(dataFrame[i], as.character)
   expect_equal(names(dataFrame), names(returnDataFrame)[2:10])

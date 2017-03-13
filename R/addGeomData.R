@@ -18,6 +18,8 @@
 #'@export
 addGeomData<-function(nc_file, geomData, instanceDimName) {
 
+  node_dim_name <- pkg.env$node_dim_name
+
   linesMode <- FALSE
   pointsMode <- FALSE
 
@@ -47,6 +49,8 @@ addGeomData<-function(nc_file, geomData, instanceDimName) {
       for(id in uIds) {
         node_count <- c(node_count, length(which(ids == id)))
       }
+    } else {
+      node_dim_name <- pkg.env$instance_dim_name
     }
     xVals <- geomData@coords[,1]
     yVals <- geomData@coords[,2]
@@ -79,7 +83,7 @@ addGeomData<-function(nc_file, geomData, instanceDimName) {
   }
   nc <- nc_open(nc_file,write = TRUE)
 
-  node_dim<-ncdim_def(pkg.env$node_dim_name, '', 1:length(xVals), create_dimvar=FALSE)
+  node_dim<-ncdim_def(node_dim_name, '', 1:length(xVals), create_dimvar=FALSE)
   xVar <- ncvar_def(name = "x", units = 'degrees_east', dim = node_dim, prec = "double")
   yVar <- ncvar_def(name = "y", units = 'degrees_north', dim = node_dim, prec = "double")
   nc <- ncvar_add(nc,xVar)

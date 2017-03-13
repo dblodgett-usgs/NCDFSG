@@ -8,7 +8,7 @@ test_that("line", {
   checkVals <- checkNCDF(nc)
 
   expect_equal(checkVals$instance_id, NULL)
-  expect_equal(checkVals$instanceDim, "instance")
+  expect_equal(checkVals$instanceDim, pkg.env$instance_dim_name)
   expect_equal(checkVals$geom_container$geom_type, "line")
   expect_equal(checkVals$geom_container$node_count, "node_count")
   expect_equal(checkVals$geom_container$part_node_count, 0)

@@ -61,7 +61,7 @@ ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL
     if(length(instance_names)!=length(geomData)) stop('instance_names must be same length as data')
   }
 
-  instanceDimName <- "instance"
+  instanceDimName <- pkg.env$instance_dim_name
 
   if(exists("attData")) {
     itemp <- sapply(attData, is.factor)

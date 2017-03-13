@@ -2,6 +2,8 @@ pkg.env <- new.env()
 pkg.env$multi_val <- -1
 pkg.env$hole_val <- -2
 
+pkg.env$instance_dim_name <- "instance"
+
 # Arbitrary dim and variable names assumed in code.
 pkg.env$node_dim_name <- 'node'
 pkg.env$part_dim_name <- 'part'
