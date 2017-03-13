@@ -1,114 +1,60 @@
-# context("NCDF check NC tests")
-#
-# test_that("instance var is found right", {
-#   nc <- nc_open("data/test_int_instance.nc")
-#
-#   checkVals <- checkNCDF(nc)
-#   instance_id<-checkVals$instance_id
-#   instanceDim<-checkVals$instanceDim
-#   coord_index_var<-checkVals$coord_index_var
-#   coord_index_stop_var<-checkVals$coord_index_stop_var
-#   multi_break_val<-checkVals$multi_break_val
-#   hole_break_val<-checkVals$hole_break_val
-#   geom_type<-checkVals$geom_type
-#
-#   expect_equal(instance_id, "instance_name")
-#   expect_equal(coord_index_var, "coordinate_index")
-#   expect_equal(instanceDim, "instance")
-# })
-#
-# test_that("point", {
-#   multipointData <- readRDS("data/pointData.rds")
-#   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = multipointData)
-#   nc <- nc_open(nc_file)
-#
-#   checkVals <- checkNCDF(nc)
-#   instance_id<-checkVals$instance_id
-#   instanceDim<-checkVals$instanceDim
-#   coord_index_var<-checkVals$coord_index_var
-#   coord_index_stop_var<-checkVals$coord_index_stop_var
-#   multi_break_val<-checkVals$multi_break_val
-#   hole_break_val<-checkVals$hole_break_val
-#   geom_type<-checkVals$geom_type
-#
-#   expect_equal(instance_id, "instance_name")
-#   expect_equal(coord_index_var, "instance_name")
-#   expect_equal(geom_type, "point")
-#   expect_equal(instanceDim, "instance")
-# })
-#
-# test_that("line", {
-#   lineData <- readRDS("data/lineData.rds")
-#   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData)
-#   nc<-nc_open(nc_file)
-#
-#   checkVals <- checkNCDF(nc)
-#   instance_id<-checkVals$instance_id
-#   instanceDim<-checkVals$instanceDim
-#   coord_index_var<-checkVals$coord_index_var
-#   coord_index_stop_var<-checkVals$coord_index_stop_var
-#   multi_break_val<-checkVals$multi_break_val
-#   hole_break_val<-checkVals$hole_break_val
-#   geom_type<-checkVals$geom_type
-#
-#   expect_equal(instance_id, "instance_name")
-#   expect_equal(instanceDim, "instance")
-#   expect_equal(coord_index_var, "coordinate_index")
-#   expect_equal(geom_type, "line")
-#   expect_equal(coord_index_stop_var, "coordinate_index_stop")
-# })
-#
-# test_that("line", {
-#   lineData <- readRDS("data/multiLineData.rds")
-#   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData)
-#   nc<-nc_open(nc_file)
-#
-#   checkVals <- checkNCDF(nc)
-#   multi_break_val<-checkVals$multi_break_val
-#   geom_type<-checkVals$geom_type
-#
-#   expect_equal(geom_type, "multiline")
-#   expect_equal(multi_break_val, -1)
-# })
-#
-# test_that("multi polygon holes", {
-#   polygonData <- readRDS("data/multipolygons_holes.rds")
-#   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
-#   nc<-nc_open(nc_file)
-#
-#   checkVals <- checkNCDF(nc)
-#   instance_id<-checkVals$instance_id
-#   instanceDim<-checkVals$instanceDim
-#   coord_index_var<-checkVals$coord_index_var
-#   coord_index_stop_var<-checkVals$coord_index_stop_var
-#   multi_break_val<-checkVals$multi_break_val
-#   hole_break_val<-checkVals$hole_break_val
-#   geom_type<-checkVals$geom_type
-#
-#   expect_equal(instance_id, "instance_name")
-#   expect_equal(instanceDim, "instance")
-#   expect_equal(coord_index_var, "coordinate_index")
-#   expect_equal(geom_type, "multipolygon")
-#   expect_equal(multi_break_val, -1)
-#   expect_equal(hole_break_val, -2)
-#   expect_equal(coord_index_stop_var, "coordinate_index_stop")
-# })
-#
-# test_that("multi polygon holes", {
-#   polygonData <- readRDS("data/polygonData.rds")
-#   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
-#   nc<-nc_open(nc_file)
-#
-#   checkVals <- checkNCDF(nc)
-#   multi_break_val<-checkVals$multi_break_val
-#   hole_break_val<-checkVals$hole_break_val
-#   geom_type<-checkVals$geom_type
-#
-#   expect_equal(multi_break_val, NULL)
-#   expect_equal(hole_break_val, NULL)
-#   expect_equal(geom_type, "polygon")
-# })
-#
+context("NCDF check NC tests")
+
+test_that("line", {
+  lineData <- readRDS("data/lineData.rds")
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData)
+  nc<-nc_open(nc_file)
+
+  checkVals <- checkNCDF(nc)
+
+  expect_equal(checkVals$instance_id, NULL)
+  expect_equal(checkVals$instanceDim, "instance")
+  expect_equal(checkVals$geom_container$geom_type, "line")
+  expect_equal(checkVals$geom_container$node_count, "node_count")
+  expect_equal(checkVals$geom_container$part_node_count, 0)
+  expect_equal(checkVals$geom_container$part_type, 0)
+  expect_equal(checkVals$geom_container$x, "x")
+  expect_equal(checkVals$geom_container$y, "y")
+})
+
+test_that("line", {
+  lineData <- readRDS("data/multiLineData.rds")
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = lineData)
+  nc<-nc_open(nc_file)
+
+  checkVals <- checkNCDF(nc)
+  expect_equal(checkVals$geom_container$geom_type, "multiline")
+  expect_equal(checkVals$geom_container$node_count, "node_count")
+  expect_equal(checkVals$geom_container$part_node_count, "part_node_count")
+  expect_equal(checkVals$geom_container$part_type, 0)
+})
+
+test_that("multi polygon holes", {
+  polygonData <- readRDS("data/multipolygons_holes.rds")
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
+  nc<-nc_open(nc_file)
+
+  checkVals <- checkNCDF(nc)
+
+  expect_equal(checkVals$geom_container$geom_type, "multipolygon")
+  expect_equal(checkVals$geom_container$node_count, "node_count")
+  expect_equal(checkVals$geom_container$part_node_count, "part_node_count")
+  expect_equal(checkVals$geom_container$part_type, "part_type")
+})
+
+test_that("multi polygon holes", {
+  polygonData <- readRDS("data/polygonData.rds")
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
+  nc<-nc_open(nc_file)
+
+  checkVals <- checkNCDF(nc)
+
+  expect_equal(checkVals$geom_container$geom_type, "polygon")
+  expect_equal(checkVals$geom_container$node_count, "node_count")
+  expect_equal(checkVals$geom_container$part_node_count, 0)
+  expect_equal(checkVals$geom_container$part_type, 0)
+})
+
 # test_that("errors", {
 #   multipointData <- readRDS("data/pointData.rds")
 #   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = multipointData)
