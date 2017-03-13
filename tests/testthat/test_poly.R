@@ -45,9 +45,9 @@ test_that("data for basic polygon", {
   expect_false(ncatt_get(nc, pkg.env$geom_container_var_name, "part_node_count")$hasatt)
   expect_false(ncatt_get(nc, pkg.env$geom_container_var_name, "part_type")$hasatt)
 
-  # returnPolyData<-FromNCDFSG(nc_file)
-  # compareSP(polygonData, returnPolyData)
-  # expect_equal(polygonData@polygons[[1]]@Polygons[[1]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[1]]@ringDir)
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
+  expect_equal(polygonData@polygons[[1]]@Polygons[[1]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[1]]@ringDir)
 })
 
 test_that("polygon with a hole.", {
@@ -73,10 +73,10 @@ test_that("polygon with a hole.", {
   expect_equal(as.numeric(ncvar_get(nc, varid = pkg.env$part_type_var_name)),
                c(pkg.env$multi_val,pkg.env$hole_val))
 
-  # returnPolyData<-FromNCDFSG(nc_file)
-  # compareSP(polygonData, returnPolyData)
-  # expect_equal(polygonData@polygons[[1]]@Polygons[[1]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[1]]@ringDir)
-  # expect_equal(polygonData@polygons[[1]]@Polygons[[2]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[2]]@ringDir)
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
+  expect_equal(polygonData@polygons[[1]]@Polygons[[1]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[1]]@ringDir)
+  expect_equal(polygonData@polygons[[1]]@Polygons[[2]]@ringDir, returnPolyData@polygons[[1]]@Polygons[[2]]@ringDir)
 })
 
 test_that("multipolygon.", {
@@ -92,8 +92,8 @@ test_that("multipolygon.", {
                c(length(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]),
                  length(polygonData@polygons[[1]]@Polygons[[2]]@coords[,2])))
 
-  # returnPolyData<-FromNCDFSG(nc_file)
-  # compareSP(polygonData, returnPolyData)
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
 })
 
 test_that("multipolygon with a hole.", {
@@ -124,8 +124,8 @@ test_that("multipolygon with a hole.", {
                ncvar_get(nc,pkg.env$part_node_count_var_name),
                ncvar_get(nc,pkg.env$part_type_var_name))
 
-  # returnPolyData<-FromNCDFSG(nc_file)
-  # compareSP(polygonData, returnPolyData)
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
 })
 
 test_that("multipolygons with holes.", {
@@ -147,6 +147,6 @@ test_that("multipolygons with holes.", {
                ncvar_get(nc,pkg.env$part_node_count_var_name),
                ncvar_get(nc,pkg.env$part_type_var_name))
 
-  # returnPolyData<-FromNCDFSG(nc_file)
-  # compareSP(polygonData, returnPolyData)
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
 })

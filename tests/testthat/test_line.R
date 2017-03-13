@@ -14,8 +14,8 @@ test_that("linedata works", {
   expect_equivalent(ncatt_get(nc, pkg.env$geom_container_var_name, pkg.env$geom_type_attr_name)$value,
                     "line")
 
-  # returnLineData<-FromNCDFSG(nc_file)
-  # compareSL(lineData, returnLineData)
+  returnLineData<-FromNCDFSG(nc_file)
+  compareSL(lineData, returnLineData)
 })
 
 test_that("multiLine data works", {
@@ -31,8 +31,8 @@ test_that("multiLine data works", {
                c(length(lineData@lines[[1]]@Lines[[1]]@coords[,1]),
                   length(lineData@lines[[1]]@Lines[[2]]@coords[,1])))
 
-  # returnLineData<-FromNCDFSG(nc_file)
-  # compareSL(lineData, returnLineData)
+  returnLineData<-FromNCDFSG(nc_file)
+  compareSL(lineData, returnLineData)
 })
 
 test_that("multiline data frame works", {
@@ -44,6 +44,6 @@ test_that("multiline data frame works", {
   nc<-nc_open(nc_file)
   expect_equal(class(nc),"ncdf4")
 
-  # returnLineData<-FromNCDFSG(nc_file)
-  # compareSL(lineData, returnLineData)
+  returnLineData<-FromNCDFSG(nc_file)
+  compareSL(lineData, returnLineData)
 })

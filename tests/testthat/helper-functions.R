@@ -28,15 +28,13 @@ checkAllPoly <- function(polygonData, node_count, part_node_count = NULL, part_t
   for(g in 1:length(polygonData@polygons)) {
     j<-0 # counter for coords in a geom
     for(p in 1:length(polygonData@polygons[[g]]@Polygons)) {
-      if(p>1) {
-        i<-i+1
         if(polygonData@polygons[[g]]@Polygons[[p]]@hole) {
-          expect_equal(part_type[i], -2)
-        } else {expect_equal(part_type[i], -1) }
-      }
+          expect_equal(part_type[i], pkg.env$hole_val)
+        } else {expect_equal(part_type[i], pkg.env$multi_val) }
       pCount <- length(polygonData@polygons[[g]]@Polygons[[p]]@coords[,1])
       expect_equal(part_node_count[i],
                    pCount)
+      i <- i + 1
       j <- j + pCount
     }
     expect_equal(node_count[g],j)

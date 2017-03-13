@@ -22,74 +22,76 @@ FromNCDFSG = function(nc_file) {
 
   instance_id<-checkVals$instance_id
   instanceDim<-checkVals$instanceDim
-  coord_index_var<-checkVals$coord_index_var
-  coord_index_stop_var<-checkVals$coord_index_stop_var
-  multi_break_val<-checkVals$multi_break_val
-  hole_break_val<-checkVals$hole_break_val
-  geom_type<-checkVals$geom_type
+  geom_container <- checkVals$geom_container
 
   line<-FALSE; poly<-FALSE; point<-FALSE
-  if(grepl("polygon", geom_type)) { poly<-TRUE
-  } else if(grepl("line", geom_type)) { line<-TRUE
+  if(grepl("polygon", geom_container$geom_type)) { poly<-TRUE
+  } else if(grepl("line", geom_container$geom_type)) { line<-TRUE
   } else point <- TRUE
 
+  xCoords <- c(ncvar_get(nc, geom_container$x))
+  yCoords <- c(ncvar_get(nc, geom_container$y))
+
   if(point) {
-    point_data_var <- strsplit(ncatt_get(nc, coord_index_var, attname = "coordinates")$value, " ")[[1]]
-    point_data <- matrix(c(ncvar_get(nc, point_data_var[1]),
-                           ncvar_get(nc, point_data_var[2])), ncol=2)
+    point_data <- matrix(c(xCoords,
+                           yCoords), ncol=2)
     dataFrame <- read_instance_data(nc, instanceDim)
+    if(geom_container$geom_type == "multipoint") {
+      stop("reading multipoint is not supported yet.")
+      # This is where handling for multipoint would go.
+    }
     SPGeom <- SpatialPointsDataFrame(point_data, proj4string = CRS("+proj=longlat +datum=WGS84"),
                                      data = dataFrame, match.ID = FALSE)
   } else {
-    node_data <- strsplit(ncatt_get(nc, coord_index_var, attname = "geom_coordinates")$value, " ")[[1]]
-    xCoords <- c(ncvar_get(nc, node_data[1]))
-    yCoords <- c(ncvar_get(nc, node_data[2]))
-    stop_inds <- c(ncvar_get(nc, coord_index_stop_var))
-    instance_names <- ncvar_get(nc, instance_id)
-    ragged_ind_var<-ncvar_get(nc, coord_index_var)
-    breaks <- sort(c(which(ragged_ind_var == hole_break_val),
-                     which(ragged_ind_var == multi_break_val)))
-    multi_hole <- rep(FALSE, length(breaks))
-    multi_hole[which(ragged_ind_var[breaks] == hole_break_val)] <- TRUE
-    start_ind <- 1
+    node_count <- c(ncvar_get(nc, geom_container$node_count))
+    if(!is.null(instance_id)) {
+      instance_names <- ncvar_get(nc, instance_id)
+    } else {
+      instance_names <- as.character(c(1:length(node_count)))
+    }
+    if(is.character(geom_container$part_node_count)) {
+      part_node_count <- ncvar_get(nc, geom_container$part_node_count)
+    } else {
+      part_node_count <- node_count
+    }
+    if(is.character(geom_container$part_type)) {
+      part_type <- ncvar_get(nc, geom_container$part_type)
+    } else {
+      part_type <- rep(pkg.env$multi_val, length(part_node_count))
+    }
+
+    node_start <- 1
+    geom_node_stop <- 0
+    pInd <- 1
     Srl <- list()
-    coord_start <- 1
-    for(geom in 1:length(stop_inds)) {
-      stop_ind <- stop_inds[geom]
-      break_ind<-breaks[which(start_ind < breaks & stop_ind > breaks)]
+    for(geom in 1:length(node_count)) {
+
+      geom_node_stop <- geom_node_stop + node_count[geom]
+
       srl <- list()
-      hole<-FALSE # First is always a polygon, not a hole?
-      if(length(break_ind) > 0) {
-        for(part in 1:length(break_ind)) {
-          coord_stop <- ragged_ind_var[break_ind[part]-1]
-          coords <- matrix(c(xCoords[coord_start:coord_stop],yCoords[coord_start:coord_stop]),ncol=2)
-          if(poly) {
-            tsrl<-Polygon(coords, hole=hole)
-          } else if(line) {
-            tsrl<-Line(coords)
-          }
-          dimnames(tsrl@coords) <- list(NULL, c("x", "y"))
-          srl <- append(srl, tsrl)
-          coord_start <- ragged_ind_var[break_ind[part]+1] # Increments to the next position where there is an index.
-          hole<-multi_hole[part] # Indicates that a hole is coming next.
-        }
+
+      while(node_start < geom_node_stop) {
+        part_node_stop <- node_start + part_node_count[pInd] - 1
+
+        if(part_type[pInd] == pkg.env$hole_val) { hole <- TRUE
+        } else { hole <- FALSE }
+
+        coords <- matrix(c(xCoords[node_start:part_node_stop],yCoords[node_start:part_node_stop]),ncol=2)
+
+        if(poly) { tsrl<-Polygon(coords, hole=hole)
+        } else if(line) { tsrl<-Line(coords) }
+
+        dimnames(tsrl@coords) <- list(NULL, c("x", "y"))
+
+        srl <- append(srl, tsrl)
+
+        node_start <- node_start + part_node_count[pInd]; pInd <- pInd + 1
       }
-      coord_stop <- ragged_ind_var[stop_ind]
-      coords <- matrix(c(xCoords[coord_start:coord_stop],yCoords[coord_start:coord_stop]),ncol=2)
-      coord_start<-coord_stop+1
-      if(poly) {
-        tsrl<-Polygon(coords, hole=hole)
-      } else if(line) {
-        tsrl<-Line(coords)
-      }
-      dimnames(tsrl@coords) <- list(NULL, c("x", "y"))
-      srl <- append(srl, tsrl)
       if(poly) {
         Srl <- append(Srl, Polygons(srl, as.character(geom)))
       }  else if(line) {
         Srl <- append(Srl, Lines(srl, as.character(geom)))
       }
-      start_ind <- stop_ind + 1
     }
     dataFrame <- read_instance_data(nc, instanceDim)
     if(poly) {

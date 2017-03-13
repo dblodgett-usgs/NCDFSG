@@ -55,6 +55,16 @@ test_that("multi polygon holes", {
   expect_equal(checkVals$geom_container$part_type, 0)
 })
 
+test_that("basic point works", {
+  multipointData <- readRDS("data/pointData.rds")
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = multipointData)
+  nc<-nc_open(nc_file)
+
+  checkVals <- checkNCDF(nc)
+
+  expect_equal(checkVals$instanceDim, pkg.env$instance_dim_name)
+})
+
 # test_that("errors", {
 #   multipointData <- readRDS("data/pointData.rds")
 #   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = multipointData)

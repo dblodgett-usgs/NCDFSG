@@ -34,9 +34,9 @@ test_that("Point_timeSeries", {
   expect_equivalent(ncatt_get(nc,varid="x","standard_name")$value,
                     "longitude")
 
-  # returnPointData<-FromNCDFSG(nc_file)
-  # expect_equal(as.numeric(multipointData@coords), as.numeric(returnPointData@coords))
-  # expect_equal(as.numeric(multipointData@bbox), as.numeric(returnPointData@bbox))
+  returnPointData<-FromNCDFSG(nc_file)
+  expect_equal(as.numeric(multipointData@coords), as.numeric(returnPointData@coords))
+  expect_equal(as.numeric(multipointData@bbox), as.numeric(returnPointData@bbox))
 })
 
 test_that("multiPoint_timeSeries", {
@@ -55,9 +55,7 @@ test_that("multiPoint_timeSeries", {
   expect_equal(as.numeric(ncvar_get(nc,'x')),
                as.numeric(multipointData@coords[,1]))
 
-  # returnPointData<-FromNCDFSG(nc_file)
-  # expect_equal(as.numeric(multipointData@coords), as.numeric(returnPointData@coords))
-  # expect_equal(as.numeric(multipointData@bbox), as.numeric(returnPointData@bbox))
+  expect_error(FromNCDFSG(nc_file), "reading multipoint is not supported yet.")
 })
 
 test_that("point lat lon", {
@@ -79,7 +77,7 @@ test_that("point lat lon", {
   expect_equivalent(ncatt_get(nc, pkg.env$geom_container_var_name, pkg.env$geom_type_attr_name)$value,
                     "point")
 
-  # returnPointData<-FromNCDFSG(nc_file)
-  # expect_equal(as.numeric(multipointData@coords), as.numeric(returnPointData@coords))
-  # expect_equal(as.numeric(multipointData@bbox), as.numeric(returnPointData@bbox))
+  returnPointData<-FromNCDFSG(nc_file)
+  expect_equal(as.numeric(multipointData@coords), as.numeric(returnPointData@coords))
+  expect_equal(as.numeric(multipointData@bbox), as.numeric(returnPointData@bbox))
 })

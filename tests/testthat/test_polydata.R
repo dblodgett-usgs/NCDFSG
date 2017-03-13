@@ -32,18 +32,21 @@ test_that("A whole shapefile can be written", {
     expect_equal(nCount, node_count[i])
   }
 
-  # checkAllPoly(nc, polygonData, nc$dim$coordinate_index$vals, ncvar_get(nc, nc$var$coordinate_index_stop))
-  # returnPolyData<-FromNCDFSG(nc_file)
-  # compareSP(polygonData, returnPolyData)
-  # for(name in names(polygonData@data)) {
-  #   expect_equal(as.character(polygonData@data[name]), as.character(returnPolyData@data[name]))
-  # }
-  # for(i in 1:length(returnPolyData@polygons)) {
-  #   expect_equal(length(returnPolyData@polygons[[i]]@Polygons), length(polygonData@polygons[[i]]@Polygons))
-  #   for(j in 1:length(returnPolyData@polygons[[i]]@Polygons)) {
-  #     expect_equal(length(returnPolyData@polygons[[i]]@Polygons[[j]]@coords), length(polygonData@polygons[[i]]@Polygons[[j]]@coords))
-  #   }
-  # }
+  checkAllPoly(polygonData, ncvar_get(nc,pkg.env$node_count_var_name),
+               ncvar_get(nc,pkg.env$part_node_count_var_name),
+               ncvar_get(nc,pkg.env$part_type_var_name))
+
+  returnPolyData<-FromNCDFSG(nc_file)
+  compareSP(polygonData, returnPolyData)
+  for(name in names(polygonData@data)) {
+    expect_equal(as.character(polygonData@data[name]), as.character(returnPolyData@data[name]))
+  }
+  for(i in 1:length(returnPolyData@polygons)) {
+    expect_equal(length(returnPolyData@polygons[[i]]@Polygons), length(polygonData@polygons[[i]]@Polygons))
+    for(j in 1:length(returnPolyData@polygons[[i]]@Polygons)) {
+      expect_equal(length(returnPolyData@polygons[[i]]@Polygons[[j]]@coords), length(polygonData@polygons[[i]]@Polygons[[j]]@coords))
+    }
+  }
   # writePolyShape(returnPolyData, "yaharaData_test")
 })
 
