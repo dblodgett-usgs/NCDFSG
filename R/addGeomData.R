@@ -75,8 +75,13 @@ addGeomData<-function(nc_file, geomData, instanceDimName) {
       pCount <- length(coords[,1])
       nCount <- nCount + pCount
       part_node_count <- c(part_node_count, pCount)
-      xVals<-c(xVals,coords[,1])
-      yVals<-c(yVals,coords[,2])
+      if(linesMode) {
+        xVals<-c(xVals,coords[,1])
+        yVals<-c(yVals,coords[,2])
+      } else {
+        xVals<-c(xVals,coords[nrow(coords):1,1])
+        yVals<-c(yVals,coords[nrow(coords):1,2])
+      }
     }
     node_count <- c(node_count, nCount)
   }

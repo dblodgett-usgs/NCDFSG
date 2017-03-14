@@ -12,10 +12,10 @@ test_that("data for basic polygon", {
   expect_equal(nc$dim$instance$vals,c(1))
 
   expect_equal(as.numeric(ncvar_get(nc,'x')),
-               as.numeric(polygonData@polygons[[1]]@Polygons[[1]]@coords[,1]))
+               as.numeric(polygonData@polygons[[1]]@Polygons[[1]]@coords[5:1,1]))
 
   expect_equal(as.numeric(ncvar_get(nc,'y')),
-               as.numeric(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]))
+               as.numeric(polygonData@polygons[[1]]@Polygons[[1]]@coords[5:1,2]))
 
   expect_equal(as.numeric(ncvar_get(nc,'node_count')),
                length(polygonData@polygons[[1]]@Polygons[[1]]@coords[,2]))
