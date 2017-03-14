@@ -56,5 +56,6 @@ for(geom in 1:length(namesstr)) {
   t<-system(paste0("ncdump ", fileName),intern = TRUE)
   cat(t,sep = "\n")
   cat("  \n```  \n\n")
+  system(paste("rm", fileName))
 }
 sink()
