@@ -71,7 +71,7 @@ ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL
     nc_file <- write_instance_data(nc_file, attData, instanceDimName)
   } else {
     instance_names<-as.data.frame(list(instance_name=instance_names), stringsAsFactors = FALSE)
-    nc_file <- write_instance_data(nc_file, instance_names, instanceDimName)
+    nc_file <- write_instance_data(nc_file, instance_names, instanceDimName, units = c(""))
   }
 
   nc_file <- addGeomData(nc_file, geomData, instanceDimName)
