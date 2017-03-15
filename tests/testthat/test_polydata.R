@@ -17,15 +17,15 @@ test_that("A whole shapefile can be written", {
   expect_equal(as.numeric(coords[nrow(coords):1,1]),as.numeric(ncvar_get(nc, varid = "x", start = c(1), count = c(118))))
   expect_equal(as.numeric(coords[nrow(coords):1,2]),as.numeric(ncvar_get(nc, varid = "y", start = c(1), count = c(118))))
   # Check to make sure a hole is encoded correctly.
-  node_count <- ncvar_get(nc, "node_count")
-  part_node_count <- ncvar_get(nc, "part_node_count")
-  part_type <- ncvar_get(nc, "part_type")
+  node_count <- ncvar_get(nc, pkg.env$node_count_var_name)
+  part_node_count <- ncvar_get(nc, pkg.env$part_node_count_var_name)
+  part_type <- ncvar_get(nc, pkg.env$part_type_var_name)
   expect_equal(length(polygonData@polygons), length(node_count))
   p <- 1
   for(i in 1:length(node_count)) {
     nCount <- 0
     for(j in 1:length(polygonData@polygons[[i]]@Polygons)) {
-      if(polygonData@polygons[[i]]@Polygons[[j]]@hole) expect_equal(part_type[p], -2)
+      if(polygonData@polygons[[i]]@Polygons[[j]]@hole) expect_equal(part_type[p], pkg.env$hole_val)
       expect_equal(length(polygonData@polygons[[i]]@Polygons[[j]]@coords[,1]), part_node_count[p])
       nCount <- nCount + part_node_count[p]
       p <- p + 1
