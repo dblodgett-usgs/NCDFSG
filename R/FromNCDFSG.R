@@ -1,4 +1,4 @@
-#'@title Convert sp objects to NetCDF
+#'@title Convert NetCDF to sp objects
 #'
 #'
 #'@param nc_file A string file path to the nc file to be read.
