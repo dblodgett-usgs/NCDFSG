@@ -27,6 +27,7 @@ checkNCDF <- function(nc) {
     warning('File does not advertise CF conventions, unexpected behavior may result.')}
 
   geom_container_var<-findVarByAtt(nc, pkg.env$geom_type_attr_name, strict = FALSE)
+
   if(length(geom_container_var) > 1) {
     stop("only one geometry container per file supported")
   } else if(length(geom_container_var) == 0) {
@@ -56,6 +57,9 @@ checkNCDF <- function(nc) {
         }
       }
     }
+
+    variable_list <- findVarByAtt(nc, pkg.env$geometry_container_att_name, geom_container_var)
+
   }
 
   # Look for variable with the timeseries_id in it.
@@ -72,7 +76,8 @@ checkNCDF <- function(nc) {
 
   return(list(instance_id = instance_id,
               instanceDim = instanceDim,
-              geom_container = geom_container))
+              geom_container = geom_container,
+              variable_list = variable_list))
 }
 
 findVarByAtt <- function(nc, attribute, value = "*", strict = TRUE) {

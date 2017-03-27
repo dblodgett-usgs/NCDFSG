@@ -23,6 +23,7 @@ FromNCDFSG = function(nc_file) {
   instance_id<-checkVals$instance_id
   instanceDim<-checkVals$instanceDim
   geom_container <- checkVals$geom_container
+  variable_list <- checkVals$variable_list
 
   line<-FALSE; poly<-FALSE; point<-FALSE
   if(grepl("polygon", geom_container$geom_type)) { poly<-TRUE
@@ -94,6 +95,13 @@ FromNCDFSG = function(nc_file) {
       }
     }
     dataFrame <- read_instance_data(nc, instanceDim)
+
+    for(varName in names(dataFrame)) {
+      if(!varName %in% variable_list) {
+        dataFrame[varName] <- NULL
+      }
+    }
+
     if(poly) {
       SPGeom <- SpatialPolygonsDataFrame(SpatialPolygons(Srl, proj4string = CRS("+proj=longlat +datum=WGS84")),
                                          dataFrame, match.ID = FALSE)
