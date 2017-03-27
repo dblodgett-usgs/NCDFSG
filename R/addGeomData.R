@@ -1,10 +1,14 @@
 #'@title Put geometry data in a NetCDF-CF File
 #'
 #'
-#'@param nc_file A string file path to the nc file to be created. It must already have an instance dimension.
-#'@param geomData An object of class \code{SpatialLines} or \code{SpatialPolygons} with WGS84 lon in the x coordinate and lat in the y coordinate.
+#'@param nc_file A string file path to the nc file to be created. It must already have
+#'an instance dimension.
+#'@param geomData An object of class \code{SpatialLines} or \code{SpatialPolygons} with
+#'WGS84 lon in the x coordinate and lat in the y coordinate.
 #'Note that three dimensional geometries is not supported.
 #'@param instanceDimName A string to name the instance dimension.  Defaults to "instance"
+#'@param variables A character vector of variable names that the geometry data
+#'container variable name will be added to.
 
 #'@description
 #'Creates a file with point, line or polygon instance data ready for the extended NetCDF-CF timeSeries featuretype format.
@@ -16,7 +20,7 @@
 #'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
 #'
 #'@export
-addGeomData<-function(nc_file, geomData, instanceDimName) {
+addGeomData<-function(nc_file, geomData, instanceDimName, variables = c()) {
 
   node_dim_name <- pkg.env$node_dim_name
 
@@ -152,6 +156,10 @@ addGeomData<-function(nc_file, geomData, instanceDimName) {
   }
 
   ncatt_put(nc, 0,'Conventions', pkg.env$cf_version)
+
+  for(var in variables) {
+    ncatt_put(nc, var, pkg.env$geometry_container_att_name, pkg.env$geom_container_var_name)
+  }
 
   nc_close(nc)
   return(nc_file)

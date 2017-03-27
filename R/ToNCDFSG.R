@@ -66,15 +66,21 @@ ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL
   if(exists("attData")) {
     itemp <- sapply(attData, is.factor)
     attData[itemp] <- lapply(attData[itemp], as.character)
-    instance_names<-as.data.frame(list(instance_name=instance_names), stringsAsFactors = FALSE)
+    itemp <- list()
+    itemp[pkg.env$instance_var_name] <- list(instance_names)
+    instance_names<-as.data.frame(itemp, stringsAsFactors = FALSE)
     attData<-cbind(instance_names,attData)
     nc_file <- write_instance_data(nc_file, attData, instanceDimName)
+    variables <- names(attData)
   } else {
-    instance_names<-as.data.frame(list(instance_name=instance_names), stringsAsFactors = FALSE)
+    itemp <- list()
+    itemp[pkg.env$instance_var_name] <- list(instance_names)
+    instance_names<-as.data.frame(itemp, stringsAsFactors = FALSE)
     nc_file <- write_instance_data(nc_file, instance_names, instanceDimName, units = c(""))
+    variables <- c(pkg.env$instance_var_name)
   }
 
-  nc_file <- addGeomData(nc_file, geomData, instanceDimName)
+  nc_file <- addGeomData(nc_file, geomData, instanceDimName, variables = variables)
 
   return(nc_file)
 }

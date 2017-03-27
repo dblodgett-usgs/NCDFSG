@@ -13,6 +13,12 @@ test_that("A whole shapefile can be written", {
   nc<-nc_open(nc_file)
   expect_equal(as.numeric(polygonData@data$GRIDCODE),as.numeric(ncvar_get(nc, varid = "GRIDCODE")))
   expect_equal(length(nc$dim$instance$vals), length(polygonData@polygons))
+
+  for(var in names(polygonData@data)) {
+    expect_equal(ncatt_get(nc, var, pkg.env$geometry_container_att_name)$value,
+                 pkg.env$geom_container_var_name)
+  }
+
   coords<-polygonData@polygons[[1]]@Polygons[[1]]@coords
   expect_equal(as.numeric(coords[nrow(coords):1,1]),as.numeric(ncvar_get(nc, varid = "x", start = c(1), count = c(118))))
   expect_equal(as.numeric(coords[nrow(coords):1,2]),as.numeric(ncvar_get(nc, varid = "y", start = c(1), count = c(118))))

@@ -42,6 +42,9 @@ test_that("data for basic polygon", {
   expect_equivalent(ncatt_get(nc, pkg.env$geom_container_var_name, pkg.env$node_count_attr_name)$value,
                     pkg.env$node_count_var_name)
 
+  expect_equal(ncatt_get(nc, pkg.env$instance_var_name, pkg.env$geometry_container_att_name)$value,
+               pkg.env$geom_container_var_name)
+
   expect_false(ncatt_get(nc, pkg.env$geom_container_var_name, "part_node_count")$hasatt)
   expect_false(ncatt_get(nc, pkg.env$geom_container_var_name, "part_type")$hasatt)
 
