@@ -18,46 +18,12 @@
 #' prj <- getPrjFromNCDF
 #'
 getPrjFromNCDF <- function(grid_mapping_atts) {
-  if(grid_mapping_atts$grid_mapping_name=="latitude_longitude") {
+  class(grid_mapping_atts) <- grid_mapping_atts$grid_mapping_name
+  UseMethod("getPrjFromNCDF",grid_mapping_atts)
+}
 
-    prj <- paste0("+proj=longlat ", getGeoDatum(grid_mapping_atts))
-
-  } else if(grid_mapping_atts$grid_mapping_name=="lambert_conformal_conic") {
-
-    longitude_of_central_meridian <- grid_mapping_atts$longitude_of_central_meridian
-
-    latitude_of_projection_origin <- grid_mapping_atts$latitude_of_projection_origin
-
-    standard_parallel <- grid_mapping_atts$standard_parallel
-
-    false_easting <- grid_mapping_atts$false_easting
-
-    false_northing <- grid_mapping_atts$false_northing
-
-    geoDatum <- getGeoDatum(grid_mapping_atts)
-
-    if(length(standard_parallel==2)) {
-      prj <- paste0("+proj=lcc +lat_1=", standard_parallel[1],
-                   " +lat_2=", standard_parallel[2],
-                   " +lat_0=", latitude_of_projection_origin,
-                   " +lon_0=", longitude_of_central_meridian,
-                   " +x_0=", false_easting,
-                   " +y_0= ", false_northing,
-                   geoDatum)
-    } else {
-      prj <- paste("+proj=lcc +lat_1=", standard_parallel[1],
-                   " +lat_2=", standard_parallel[1],
-                   " +lat_0=", latitude_of_projection_origin,
-                   " +lon_0=", longitude_of_central_meridian,
-                   " +x_0=", false_easting,
-                   " +y_0= ", false_northing,
-                   geoDatum)
-    }
-  } else {
-    # if all else fails, we have to assume EPSG:4326 Lat/Lon.
-    prj <- "+init=epsg:4326"
-  }
-  return(prj)
+getPrjFromNCDF.latitude_longitude <- function(gm) {
+  prj <- paste0("+proj=longlat ", getGeoDatum(gm))
 }
 
 getGeoDatum <- function(grid_mapping_atts) {
