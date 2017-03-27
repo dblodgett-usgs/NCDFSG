@@ -2,7 +2,7 @@
 % Please edit documentation in R/FromNCDFSG.R
 \name{FromNCDFSG}
 \alias{FromNCDFSG}
-\title{Convert sp objects to NetCDF}
+\title{Convert NetCDF to sp objects}
 \usage{
 FromNCDFSG(nc_file)
 }
