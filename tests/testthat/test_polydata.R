@@ -3,8 +3,10 @@ library("ncdf4")
 context("NCDF SG polygonData tests")
 
 # data prep.
-# library(maptools)
-# shapeData<-readShapePoly("tests/testthat/data/Yahara_alb/Yahara_River_HRUs_alb_eq")
+# library(rgdal)
+# shapeData<-readOGR(dsn = "data/Yahara_alb/Yahara_River_HRUs_alb_eq.shp",
+#                    layer = "Yahara_River_HRUs_alb_eq",
+#                    stringsAsFactors = FALSE)
 # saveRDS(shapeData,file="data/yahara_shapefile_data.rds")
 
 test_that("A whole shapefile can be written", {
