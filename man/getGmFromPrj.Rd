@@ -17,7 +17,9 @@ This function takes a proj4 string and returns a NetCDF-CF projection container 
 a named list of attributes.
 }
 \examples{
+\dontrun{
 prj <- "+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
 grid_mapping <- getGmFromPrj(prj)
+}
 
 }

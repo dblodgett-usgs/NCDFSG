@@ -55,6 +55,10 @@ test_that("Azimuthal Equidistant", {
 
   expect_equal(prj, p)
 
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
+
 })
 
 test_that("lambert conformal conic daymet", {
@@ -72,6 +76,11 @@ test_that("lambert conformal conic daymet", {
   prj <- getPrjFromNCDF(c)
 
   expect_equal(prj, p)
+
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
+
 })
 
 test_that("lambert_azimuthal_equal_area", {
@@ -89,6 +98,8 @@ test_that("lambert_azimuthal_equal_area", {
 
   expect_equal(prj, p)
 
+  crs <- getGmFromPrj(p)
+
   c <- list(grid_mapping_name = "lambert_azimuthal_equal_area",
               longitude_of_projection_origin = 0,
               latitude_of_projection_origin = 90,
@@ -99,6 +110,10 @@ test_that("lambert_azimuthal_equal_area", {
   prj <- getPrjFromNCDF(c)
 
   expect_equal(prj, p)
+
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
 
 })
 
@@ -116,6 +131,10 @@ test_that("lambert_cylindrical_equal_area", {
 
   expect_equal(prj, p)
 
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
+
 })
 
 test_that("mercator", {
@@ -131,6 +150,10 @@ test_that("mercator", {
 
   expect_equal(prj, p)
 
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
+
   p <- "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
 
   c <- list(grid_mapping_name = "mercator",
@@ -143,6 +166,10 @@ test_that("mercator", {
 
   expect_equal(prj, p)
 
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
+
 
 })
 
@@ -150,7 +177,7 @@ test_that("oblique_mercator", {
   p <- "+proj=omerc +lat_0=45.3091666666667 +lonc=-86 +k=0.9996 +alpha=337.25556 +gamma=337.25556 +no_uoff +x_0=2546731.496 +y_0=-4354009.816 +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
 
   c <- list(grid_mapping_name = "oblique_mercator",
-              azimuth_of_central_line = "337.25556",
+              azimuth_of_central_line = 337.25556,
               longitude_of_projection_origin = -86,
               latitude_of_projection_origin = 45.3091666666667,
               scale_factor_at_projection_origin = 0.9996,
@@ -160,6 +187,10 @@ test_that("oblique_mercator", {
   prj <- getPrjFromNCDF(c)
 
   expect_equal(prj, p)
+
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
 
 })
 
@@ -175,6 +206,10 @@ test_that("orthographic", {
   prj <- getPrjFromNCDF(c)
 
   expect_equal(prj, p)
+
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
 
 })
 
@@ -192,6 +227,10 @@ test_that("polar_stereographic", {
 
   expect_equal(prj, p)
 
+  # crs <- getGmFromPrj(p)
+  #
+  # expect_equal(crs[names(c)], c)
+
   p <- "+proj=stere +lat_0=-90 +lon_0=0 +lat_ts=-71 +x_0=0 +y_0=0 +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
 
   c <- list(grid_mapping_name = "polar_stereographic",
@@ -204,6 +243,10 @@ test_that("polar_stereographic", {
   prj <- getPrjFromNCDF(c)
 
   expect_equal(prj, p)
+
+  # crs <- getGmFromPrj(p)
+  #
+  # expect_equal(crs[names(c)], c)
 
 })
 
@@ -235,6 +278,11 @@ test_that("stereographic", {
 
   expect_equal(prj, p)
 
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
+
+
 })
 
 test_that("transverse_mercator", {
@@ -250,5 +298,10 @@ test_that("transverse_mercator", {
   prj <- getPrjFromNCDF(c)
 
   expect_equal(prj, p)
+
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs[names(c)], c)
+
 
 })

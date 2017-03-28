@@ -24,10 +24,12 @@ in the projectiuon container, warnings will be provided in that case.
 If only a semi_major axis is provided, a sperical earch is assumed.
 }
 \examples{
+\dontrun{
 crs <- list(grid_mapping_name="latitude_longitude",
             lontidue_of_prime_meridian = 0,
             semi_major_axis = 6378137,
             inverse_flattening = 298)
 prj <- getPrjFromNCDF(crs)
+}
 
 }
