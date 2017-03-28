@@ -4,10 +4,10 @@
 \alias{getPrjFromNCDF}
 \title{Get projection from NetCDF-CF Grid Mapping}
 \usage{
-getPrjFromNCDF(grid_mapping_atts)
+getPrjFromNCDF(gm)
 }
 \arguments{
-\item{grid_mapping_atts}{A list of attributes of the grid mapping variable
+\item{gm}{A list of attributes of the grid mapping variable
 as returned by ncdf or ncdf4's get attributes functions.}
 }
 \value{
@@ -17,11 +17,17 @@ A proj4 string for use with the sp CRS function.
 This function takes a NetCDF-CF projection container and returns
 a proj4 string.
 }
+\details{
+The WGS84 datum is used as a default if one os not provided
+in the projectiuon container, warnings will be provided in that case.
+
+If only a semi_major axis is provided, a sperical earch is assumed.
+}
 \examples{
 crs <- list(grid_mapping_name="latitude_longitude",
             lontidue_of_prime_meridian = 0,
             semi_major_axis = 6378137,
             inverse_flattening = 298)
-prj <- getPrjFromNCDF
+prj <- getPrjFromNCDF(crs)
 
 }

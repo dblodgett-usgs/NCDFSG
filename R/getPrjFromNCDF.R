@@ -3,7 +3,12 @@
 #' This function takes a NetCDF-CF projection container and returns
 #' a proj4 string.
 #'
-#' @param grid_mapping_atts A list of attributes of the grid mapping variable
+#' The WGS84 datum is used as a default if one os not provided
+#' in the projectiuon container, warnings will be provided in that case.
+#'
+#' If only a semi_major axis is provided, a sperical earch is assumed.
+#'
+#' @param gm A list of attributes of the grid mapping variable
 #' as returned by ncdf or ncdf4's get attributes functions.
 #'
 #' @return A proj4 string for use with the sp CRS function.
@@ -15,33 +20,235 @@
 #'             lontidue_of_prime_meridian = 0,
 #'             semi_major_axis = 6378137,
 #'             inverse_flattening = 298)
-#' prj <- getPrjFromNCDF
+#' prj <- getPrjFromNCDF(crs)
 #'
-getPrjFromNCDF <- function(grid_mapping_atts) {
-  class(grid_mapping_atts) <- grid_mapping_atts$grid_mapping_name
-  UseMethod("getPrjFromNCDF",grid_mapping_atts)
+getPrjFromNCDF <- function(gm) {
+  class(gm) <- gm$grid_mapping_name
+  UseMethod("getPrjFromNCDF", gm)
+}
+
+getPrjFromNCDF.albers_conical_equal_area <- function(gm) {
+  projargs <- paste("+proj=aea",
+                    standPar(gm),
+                    falseEastNorth(gm),
+                    latProjOrig(gm),
+                    lonCentMer(gm),
+                    getGeoDatum(gm))
+}
+
+getPrjFromNCDF.azimuthal_equidistant <- function(gm) {
+  projargs <- paste("+proj=aeqd",
+                    latProjOrig(gm),
+                    lonProjOrig(gm),
+                    falseEastNorth(gm),
+                    getGeoDatum(gm))
+}
+# getPrjFromNCDF.geostationary <- function(gm) {
+#   #+proj=geos +lon_0=0 +h=-0 +x_0=0 +y_0=0 +units=m +no_defs
+# projargs <- paste("+proj=geos",
+#                   latProjOrig(gm),
+#                   lonProjOrig(gm),
+#                   # persHeight(gm),
+#                   falseEastNorth(gm),
+#                   getGeoDatum(gm))
+# # Fixed angle and sweep angle axes?
+# }
+getPrjFromNCDF.lambert_azimuthal_equal_area <- function(gm) {
+  projargs <- paste("+proj=laea",
+                    latProjOrig(gm),
+                    lonProjOrig(gm),
+                    falseEastNorth(gm),
+                    getGeoDatum(gm))
+}
+
+getPrjFromNCDF.lambert_conformal_conic <- function(gm) {
+  projargs <- paste("+proj=lcc",
+                    standPar(gm),
+                    falseEastNorth(gm),
+                    latProjOrig(gm),
+                    lonCentMer(gm),
+                    getGeoDatum(gm))
+}
+
+getPrjFromNCDF.lambert_cylindrical_equal_area <- function(gm) {
+  projargs <- paste("+proj=cea",
+                    lonCentMer(gm),
+                    oneStandPar(gm),
+                    falseEastNorth(gm),
+                    getGeoDatum(gm))
 }
 
 getPrjFromNCDF.latitude_longitude <- function(gm) {
   prj <- paste0("+proj=longlat ", getGeoDatum(gm))
 }
+getPrjFromNCDF.mercator <- function(gm) {
+  if(!is.null(gm$scale_factor_at_projection_origin)) {
+    projargs <- paste("+proj=merc",
+                      lonProjOrig(gm),
+                      scaleFactor(gm),
+                      falseEastNorth(gm),
+                      getGeoDatum(gm))
+  } else {
+    projargs <- paste("+proj=merc",
+                      lonProjOrig(gm),
+                      oneStandPar(gm),
+                      falseEastNorth(gm),
+                      getGeoDatum(gm))
+  }
+}
+getPrjFromNCDF.oblique_mercator <- function(gm) {
+  #!!!! Check this one out. the oMerc function is a hack !!!!
+  projargs <- paste("+proj=omerc",
+                    latProjOrig(gm),
+                    lonProjCent(gm),
+                    scaleFactor(gm),
+                    oMerc(gm),
+                    falseEastNorth(gm),
+                    getGeoDatum(gm))
+}
 
-getGeoDatum <- function(grid_mapping_atts) {
+getPrjFromNCDF.orthographic <- function(gm) {
+  projargs <- paste("+proj=ortho",
+                    latProjOrig(gm),
+                    lonProjOrig(gm),
+                    falseEastNorth(gm),
+                    getGeoDatum(gm))
+}
 
-  longitude_of_prime_meridian <- grid_mapping_atts$longitude_of_prime_meridian
+getPrjFromNCDF.polar_stereographic <- function(gm) {
+  if(!is.null(gm$scale_factor_at_projection_origin)) {
+    projargs <- paste("+proj=stere",
+                      latProjOrig(gm),
+                      stVertLon(gm),
+                      scaleFactor(gm),
+                      falseEastNorth(gm),
+                      getGeoDatum(gm))
+  } else {
+    projargs <- paste("+proj=stere",
+                      latProjOrig(gm),
+                      stVertLon(gm),
+                      oneStandPar(gm),
+                      falseEastNorth(gm),
+                      getGeoDatum(gm))
+  }
+}
+# getPrjFromNCDF.rotated_latitude_longitude <- function(gm) {
+#   # not supported?
+# }
+#
+getPrjFromNCDF.sinusoidal <- function(gm) {
+projargs <- paste("+proj=sinu",
+                  lonProjOrig(gm),
+                  falseEastNorth(gm),
+                  getGeoDatum(gm))
+}
+#
+getPrjFromNCDF.stereographic <- function(gm) {
+  projargs <- paste("+proj=stere",
+                    latProjOrig(gm),
+                    lonProjOrig(gm),
+                    scaleFactor(gm),
+                    falseEastNorth(gm),
+                    getGeoDatum(gm))
+}
 
-  semi_major_axis <- grid_mapping_atts$semi_major_axis
+getPrjFromNCDF.transverse_mercator <- function(gm) {
+  projargs <- paste("+proj=tmerc",
+                    latProjOrig(gm),
+                    lonProjOrig(gm),
+                    scaleFactor(gm),
+                    falseEastNorth(gm),
+                    getGeoDatum(gm))
+}
+#
+# getPrjFromNCDF.vertical_perspective <- function(gm) {
+#   #"+proj=nsper +h=1"
+# Not supported?
+# }
 
-  if (is.null(semi_major_axis)) { semi_major_axis <- 6378137.0 }
+getGeoDatum <- function(gm) {
 
-  inverse_flattening <- grid_mapping_atts$inverse_flattening
+  if(is.null(gm$longitude_of_prime_meridian)) {
+    warning("Didn't find a longitude of prime meridian for datum, assuming 0.")
+    gm$longitude_of_prime_meridian <- 0
+  }
 
-  if (is.null(inverse_flattening)) { inverse_flattening <- 298.257223563 }
+  if(is.null(gm$semi_major_axis)) {
+    warning("Didn't find a semi major axis for datum, assuming WGS84 6378137.0 meters")
+    gm$semi_major_axis <- 6378137.0
 
-  geoDatum <- paste0("+a=", semi_major_axis,
-                     " +f=", (1/inverse_flattening))
+    if(is.null(gm$inverse_flattening) && is.null(gm$semi_minor_axis)) {
+      warning("Didn't find an inverse flattening value, assuming WGS84 298.257223563")
+      gm$inverse_flattening <- 298.257223563
+    }
+  }
 
-  # Need to handle longitude of prime meridian.
-
+  if(!is.null(gm$inverse_flattening)) {
+    geoDatum <- paste0("+a=", gm$semi_major_axis,
+                       " +f=", (1/gm$inverse_flattening),
+                       " +pm=", gm$longitude_of_prime_meridian,
+                       " +units=m +no_defs")
+  } else if(!is.null(gm$semi_minor_axis)) {
+    geoDatum <- paste0("+a=", gm$semi_major_axis,
+                       " +b=", gm$semi_minor_axis,
+                       " +pm=", gm$longitude_of_prime_meridian,
+                       " +units=m +no_defs")
+  } else {
+    geoDatum <- paste0("+a=", gm$semi_major_axis,
+                       " +b=", gm$semi_major_axis,
+                       " +pm=", gm$longitude_of_prime_meridian,
+                       " +units=m +no_defs")
+  }
   return(geoDatum)
 }
+
+standPar <- function(gm) {
+  if(length(gm$standard_parallel)==1) {
+    gm$standard_parallel <-
+      c(gm$standard_parallel,
+        gm$standard_parallel)
+  }
+  outString <- paste0("+lat_1=", gm$standard_parallel[1],
+                      " +lat_2=", gm$standard_parallel[2])
+}
+
+oneStandPar <- function(gm) {
+  outString <- paste0("+lat_ts=", gm$standard_parallel[1])
+}
+
+falseEastNorth <- function(gm) {
+  options(scipen=2)
+  outString <- paste0("+x_0=", gm$false_easting,
+                      " +y_0=", gm$false_northing)
+}
+
+latProjOrig <- function(gm) {
+  outString <- paste0("+lat_0=", gm$latitude_of_projection_origin)
+}
+
+lonCentMer <- function(gm) {
+  outString <- paste0("+lon_0=", gm$longitude_of_central_meridian)
+}
+
+lonProjOrig <- function(gm) {
+  outString <- paste0("+lon_0=", gm$longitude_of_projection_origin)
+}
+
+stVertLon <- function(gm) {
+  outString <- paste0("+lon_0=", gm$straight_vertical_longitude_from_pole)
+}
+
+scaleFactor <- function(gm) {
+  outString <- paste0("+k=", gm$scale_factor_at_projection_origin)
+}
+
+oMerc <- function(gm) {
+  outString <- paste0("+alpha=", gm$azimuth_of_central_line,
+                      " +gamma=", gm$azimuth_of_central_line,
+                      " +no_uoff")
+}
+
+lonProjCent <- function(gm) {
+  outString <- paste0("+lonc=", gm$longitude_of_projection_origin)
+}
+
