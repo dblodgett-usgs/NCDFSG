@@ -1,8 +1,10 @@
 context("NCDF SG pointData tests")
 
 # data prep.
-# library(maptools)
-# shapeData<-readShapePoints("data/se_sitest")
+# library(rgdal)
+# shapeData<-readOGR(dsn = "data/se_sites/se_sitest.shp",
+#                    layer = "se_sitest",
+#                    stringsAsFactors = FALSE)
 # i <- sapply(shapeData@data, is.factor)
 # shapeData@data[i] <- lapply(shapeData@data[i], as.character)
 # saveRDS(shapeData,file="data/se_points_data.rds")

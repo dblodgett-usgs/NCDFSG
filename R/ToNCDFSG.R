@@ -49,7 +49,7 @@ ToNCDFSG = function(nc_file, geomData = NULL, instance_names = NULL, lats = NULL
     attData<-geomData@data
   } else if(!is.null(lats)) {
     pointsMode<-TRUE
-    geomData <- SpatialPoints(as.data.frame(list(x=lons, y=lats)),proj4string = CRS("+proj=longlat +ellps=WGS84"))
+    geomData <- SpatialPoints(as.data.frame(list(x=lons, y=lats)),proj4string = CRS("+proj=longlat +datum=WGS84"))
     if(is.null(instance_names)) {
       instance_names<-as.character(c(1:length(lats)))
     }

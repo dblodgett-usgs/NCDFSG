@@ -85,6 +85,12 @@ checkNCDF <- function(nc) {
         crs <- c(crs, ncatt_get(nc, crs_referent, "grid_mapping")$value)
       }
     }
+    if(length(unique(crs)) > 1) {
+      warning("Only one crs is supported, more than one was found, may be handling projections wrong.")
+      crs <- crs[1]
+    }
+
+    crs <- ncatt_get(nc, crs[[1]])
   }
 
   return(list(instance_id = instance_id,

@@ -1,8 +1,9 @@
 context("NCDF SG lineData tests")
 
 # data prep.
-# library(maptools)
-# lineData<-readShapeLines("data/NHDLine")
+# library(rgdal)
+# lineData<-readOGR(dsn = "data/NHDLine/NHDLine.shp",
+#                   layer = "NHDLine", stringsAsFactors = FALSE)
 # i <- sapply(lineData@data, is.factor)
 # lineData@data[i] <- lapply(lineData@data[i], as.character)
 # saveRDS(lineData,file="data/NHDline_data.rds")

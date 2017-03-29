@@ -24,6 +24,7 @@ FromNCDFSG = function(nc_file) {
   instanceDim<-checkVals$instanceDim
   geom_container <- checkVals$geom_container
   variable_list <- checkVals$variable_list
+  crs <- checkVals$crs
 
   line<-FALSE; poly<-FALSE; point<-FALSE
   if(grepl("polygon", geom_container$geom_type)) { poly<-TRUE
@@ -33,6 +34,12 @@ FromNCDFSG = function(nc_file) {
   xCoords <- c(ncvar_get(nc, geom_container$x))
   yCoords <- c(ncvar_get(nc, geom_container$y))
 
+  if(length(crs) == 0) {
+    prj <- "+proj=longlat +datum=WGS84"
+  } else {
+    prj <- getPrjFromNCDF(crs)
+  }
+
   if(point) {
     point_data <- matrix(c(xCoords,
                            yCoords), ncol=2)
@@ -41,7 +48,7 @@ FromNCDFSG = function(nc_file) {
       stop("reading multipoint is not supported yet.")
       # This is where handling for multipoint would go.
     }
-    SPGeom <- SpatialPointsDataFrame(point_data, proj4string = CRS("+proj=longlat +datum=WGS84"),
+    SPGeom <- SpatialPointsDataFrame(point_data, proj4string = CRS(prj),
                                      data = dataFrame, match.ID = FALSE)
   } else {
     node_count <- c(ncvar_get(nc, geom_container$node_count))
