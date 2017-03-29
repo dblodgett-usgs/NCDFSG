@@ -16,10 +16,13 @@ A named list containing attributes required for that grid_mapping.
 This function takes a proj4 string and returns a NetCDF-CF projection container as
 a named list of attributes.
 }
+\details{
+https://en.wikibooks.org/wiki/PROJ.4
+https://trac.osgeo.org/gdal/wiki/NetCDF_ProjectionTestingStatus
+http://cfconventions.org/cf-conventions/cf-conventions.html#appendix-grid-mappings
+}
 \examples{
-\dontrun{
 prj <- "+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
 grid_mapping <- getGmFromPrj(prj)
-}
 
 }

@@ -4,7 +4,7 @@ test_that("wgs 84 lat lon", {
   p <- "+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
 
   c <- list(grid_mapping_name="latitude_longitude",
-              lontidue_of_prime_meridian = 0,
+              longitude_of_prime_meridian = 0,
               semi_major_axis = 6378137,
               inverse_flattening = 298.257223563)
 

@@ -8,6 +8,10 @@
 #'
 #' If only a semi_major axis is provided, a sperical earch is assumed.
 #'
+#' https://en.wikibooks.org/wiki/PROJ.4
+#' https://trac.osgeo.org/gdal/wiki/NetCDF_ProjectionTestingStatus
+#' http://cfconventions.org/cf-conventions/cf-conventions.html#appendix-grid-mappings
+#'
 #' @param gm A list of attributes of the grid mapping variable
 #' as returned by ncdf or ncdf4's get attributes functions.
 #'
@@ -16,20 +20,21 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#'
 #' crs <- list(grid_mapping_name="latitude_longitude",
-#'             lontidue_of_prime_meridian = 0,
+#'             longitude_of_prime_meridian = 0,
 #'             semi_major_axis = 6378137,
 #'             inverse_flattening = 298)
 #' prj <- getPrjFromNCDF(crs)
-#' }
 #'
 getPrjFromNCDF <- function(gm) {
   class(gm) <- gm$grid_mapping_name
-  UseMethod("getPrjFromNCDF", gm)
+  GPFN(gm)
 }
 
-getPrjFromNCDF.albers_conical_equal_area <- function(gm) {
+GPFN <- function(gm) UseMethod("GPFN")
+
+GPFN.albers_conical_equal_area <- function(gm) {
   projargs <- paste("+proj=aea",
                     standPar(gm),
                     falseEastNorth(gm),
@@ -38,14 +43,14 @@ getPrjFromNCDF.albers_conical_equal_area <- function(gm) {
                     getGeoDatum(gm))
 }
 
-getPrjFromNCDF.azimuthal_equidistant <- function(gm) {
+GPFN.azimuthal_equidistant <- function(gm) {
   projargs <- paste("+proj=aeqd",
                     latProjOrig(gm),
                     lonProjOrig(gm),
                     falseEastNorth(gm),
                     getGeoDatum(gm))
 }
-# getPrjFromNCDF.geostationary <- function(gm) {
+# GPFN.geostationary <- function(gm) {
 #   #+proj=geos +lon_0=0 +h=-0 +x_0=0 +y_0=0 +units=m +no_defs
 # projargs <- paste("+proj=geos",
 #                   latProjOrig(gm),
@@ -55,7 +60,7 @@ getPrjFromNCDF.azimuthal_equidistant <- function(gm) {
 #                   getGeoDatum(gm))
 # # Fixed angle and sweep angle axes?
 # }
-getPrjFromNCDF.lambert_azimuthal_equal_area <- function(gm) {
+GPFN.lambert_azimuthal_equal_area <- function(gm) {
   projargs <- paste("+proj=laea",
                     latProjOrig(gm),
                     lonProjOrig(gm),
@@ -63,7 +68,7 @@ getPrjFromNCDF.lambert_azimuthal_equal_area <- function(gm) {
                     getGeoDatum(gm))
 }
 
-getPrjFromNCDF.lambert_conformal_conic <- function(gm) {
+GPFN.lambert_conformal_conic <- function(gm) {
   projargs <- paste("+proj=lcc",
                     standPar(gm),
                     falseEastNorth(gm),
@@ -72,7 +77,7 @@ getPrjFromNCDF.lambert_conformal_conic <- function(gm) {
                     getGeoDatum(gm))
 }
 
-getPrjFromNCDF.lambert_cylindrical_equal_area <- function(gm) {
+GPFN.lambert_cylindrical_equal_area <- function(gm) {
   projargs <- paste("+proj=cea",
                     lonCentMer(gm),
                     oneStandPar(gm),
@@ -80,10 +85,10 @@ getPrjFromNCDF.lambert_cylindrical_equal_area <- function(gm) {
                     getGeoDatum(gm))
 }
 
-getPrjFromNCDF.latitude_longitude <- function(gm) {
+GPFN.latitude_longitude <- function(gm) {
   prj <- paste0("+proj=longlat ", getGeoDatum(gm))
 }
-getPrjFromNCDF.mercator <- function(gm) {
+GPFN.mercator <- function(gm) {
   if(!is.null(gm$scale_factor_at_projection_origin)) {
     projargs <- paste("+proj=merc",
                       lonProjOrig(gm),
@@ -98,7 +103,7 @@ getPrjFromNCDF.mercator <- function(gm) {
                       getGeoDatum(gm))
   }
 }
-getPrjFromNCDF.oblique_mercator <- function(gm) {
+GPFN.oblique_mercator <- function(gm) {
   #!!!! Check this one out. the oMerc function is a hack !!!!
   projargs <- paste("+proj=omerc",
                     latProjOrig(gm),
@@ -109,7 +114,7 @@ getPrjFromNCDF.oblique_mercator <- function(gm) {
                     getGeoDatum(gm))
 }
 
-getPrjFromNCDF.orthographic <- function(gm) {
+GPFN.orthographic <- function(gm) {
   projargs <- paste("+proj=ortho",
                     latProjOrig(gm),
                     lonProjOrig(gm),
@@ -117,7 +122,7 @@ getPrjFromNCDF.orthographic <- function(gm) {
                     getGeoDatum(gm))
 }
 
-getPrjFromNCDF.polar_stereographic <- function(gm) {
+GPFN.polar_stereographic <- function(gm) {
   if(!is.null(gm$scale_factor_at_projection_origin)) {
     projargs <- paste("+proj=stere",
                       latProjOrig(gm),
@@ -134,18 +139,18 @@ getPrjFromNCDF.polar_stereographic <- function(gm) {
                       getGeoDatum(gm))
   }
 }
-# getPrjFromNCDF.rotated_latitude_longitude <- function(gm) {
+# GPFN.rotated_latitude_longitude <- function(gm) {
 #   # not supported?
 # }
 #
-getPrjFromNCDF.sinusoidal <- function(gm) {
+GPFN.sinusoidal <- function(gm) {
 projargs <- paste("+proj=sinu",
                   lonProjOrig(gm),
                   falseEastNorth(gm),
                   getGeoDatum(gm))
 }
 #
-getPrjFromNCDF.stereographic <- function(gm) {
+GPFN.stereographic <- function(gm) {
   projargs <- paste("+proj=stere",
                     latProjOrig(gm),
                     lonProjOrig(gm),
@@ -154,7 +159,7 @@ getPrjFromNCDF.stereographic <- function(gm) {
                     getGeoDatum(gm))
 }
 
-getPrjFromNCDF.transverse_mercator <- function(gm) {
+GPFN.transverse_mercator <- function(gm) {
   projargs <- paste("+proj=tmerc",
                     latProjOrig(gm),
                     lonProjOrig(gm),
@@ -163,7 +168,7 @@ getPrjFromNCDF.transverse_mercator <- function(gm) {
                     getGeoDatum(gm))
 }
 #
-# getPrjFromNCDF.vertical_perspective <- function(gm) {
+# GPFN.vertical_perspective <- function(gm) {
 #   #"+proj=nsper +h=1"
 # Not supported?
 # }

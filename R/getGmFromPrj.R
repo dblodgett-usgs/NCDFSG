@@ -3,6 +3,11 @@
 #' This function takes a proj4 string and returns a NetCDF-CF projection container as
 #' a named list of attributes.
 #'
+#' https://en.wikibooks.org/wiki/PROJ.4
+#' https://trac.osgeo.org/gdal/wiki/NetCDF_ProjectionTestingStatus
+#' http://cfconventions.org/cf-conventions/cf-conventions.html#appendix-grid-mappings
+#'
+#'
 #' @param prj A proj.4 string as returned from the sp CRS function.
 #'
 #' @return A named list containing attributes required for that grid_mapping.
@@ -11,25 +16,22 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' prj <- "+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
 #' grid_mapping <- getGmFromPrj(prj)
-#' }
 #'
 getGmFromPrj <- function(prj) {
   al <- prepCRS(prj)
-  class(prj) <- class(al)
-  UseMethod("getGmFromPrj", prj)
+  GGFP(al)
 }
 
-getGmFromPrj.latitude_longitude <- function(prj) {
-  al <- prepCRS(prj)
+GGFP <- function(al) UseMethod("GGFP")
+
+GGFP.latitude_longitude <- function(al) {
   gm <- c(list(grid_mapping_name = "latitude_longitude"),
           getGeoDatum_gm(al))
 }
 
-getGmFromPrj.albers_conical_equal_area <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.albers_conical_equal_area <- function(al) {
   gm <- c(list(grid_mapping_name = "albers_conical_equal_area"),
        lonCentMer_gm(al),
        latProjOrig_gm(al),
@@ -38,8 +40,7 @@ getGmFromPrj.albers_conical_equal_area <- function(prj) {
        getGeoDatum_gm(al))
 }
 
-getGmFromPrj.azimuthal_equidistant <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.azimuthal_equidistant <- function(al) {
   gm <- c(list(grid_mapping_name = "azimuthal_equidistant"),
           lonProjOrig_gm(al),
           latProjOrig_gm(al),
@@ -47,8 +48,7 @@ getGmFromPrj.azimuthal_equidistant <- function(prj) {
           getGeoDatum_gm(al))
 }
 
-getGmFromPrj.lambert_azimuthal_equal_area <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.lambert_azimuthal_equal_area <- function(al) {
   gm <- c(list(grid_mapping_name = "lambert_azimuthal_equal_area"),
           latProjOrig_gm(al),
           lonProjOrig_gm(al),
@@ -56,8 +56,7 @@ getGmFromPrj.lambert_azimuthal_equal_area <- function(prj) {
           getGeoDatum_gm(al))
 }
 
-getGmFromPrj.lambert_conformal_conic <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.lambert_conformal_conic <- function(al) {
   gm <- c(list(grid_mapping_name = "lambert_conformal_conic"),
                     standPar_gm(al),
                     falseEastNorth_gm(al),
@@ -66,8 +65,7 @@ getGmFromPrj.lambert_conformal_conic <- function(prj) {
                     getGeoDatum_gm(al))
 }
 
-getGmFromPrj.lambert_cylindrical_equal_area <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.lambert_cylindrical_equal_area <- function(al) {
   gm <- c(list(grid_mapping_name = "lambert_cylindrical_equal_area"),
                     lonCentMer_gm(al),
                     oneStandPar_gm(al),
@@ -75,8 +73,7 @@ getGmFromPrj.lambert_cylindrical_equal_area <- function(prj) {
                     getGeoDatum_gm(al))
 }
 
-getGmFromPrj.mercator <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.mercator <- function(al) {
   if(!is.null(al$k)) {
     gm <- c(list(grid_mapping_name = "mercator"),
                       lonProjOrig_gm(al),
@@ -92,8 +89,7 @@ getGmFromPrj.mercator <- function(prj) {
   }
 }
 
-getGmFromPrj.oblique_mercator <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.oblique_mercator <- function(al) {
   #!!!! Check this one out. the oMerc function is a hack !!!!
   gm <- c(list(grid_mapping_name = "oblique_mercator"),
                     latProjOrig_gm(al),
@@ -104,8 +100,7 @@ getGmFromPrj.oblique_mercator <- function(prj) {
                     getGeoDatum_gm(al))
 }
 
-getGmFromPrj.orthographic <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.orthographic <- function(al) {
   gm <- c(list(grid_mapping_name = "orthographic"),
                     latProjOrig_gm(al),
                     lonProjOrig_gm(al),
@@ -113,8 +108,7 @@ getGmFromPrj.orthographic <- function(prj) {
                     getGeoDatum_gm(al))
 }
 
-# getGmFromPrj.polar_stereographic <- function(prj) {
-#   al <- prepCRS(prj)
+# GGFP.polar_stereographic <- function(al) {
 #   if(!is.null(al$k)) {
 #     gm <- c(list(grid_mapping_name = "polar_stereographic"),
 #                       latProjOrig_gm(al),
@@ -132,15 +126,14 @@ getGmFromPrj.orthographic <- function(prj) {
 #   }
 # }
 
-# getGmFromPrj.sinusoidal <- function(prj) {
+# GGFP.sinusoidal <- function(al) {
 #   gm <- c(list(grid_mapping_name = "sinusoidal"),
 #                     lonProjOrig_gm(al),
 #                     falseEastNorth_gm(al),
 #                     getGeoDatum_gm(al))
 # }
 
-getGmFromPrj.stereographic <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.stereographic <- function(al) {
   gm <- c(list(grid_mapping_name = "stereographic"),
                     latProjOrig_gm(al),
                     lonProjOrig_gm(al),
@@ -149,8 +142,7 @@ getGmFromPrj.stereographic <- function(prj) {
                     getGeoDatum_gm(al))
 }
 
-getGmFromPrj.transverse_mercator <- function(prj) {
-  al <- prepCRS(prj)
+GGFP.transverse_mercator <- function(al) {
   gm <- c(list(grid_mapping_name = "transverse_mercator"),
                     latProjOrig_gm(al),
                     lonProjOrig_gm(al),
