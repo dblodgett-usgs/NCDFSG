@@ -13,6 +13,19 @@ test_that("A whole shapefile can be written", {
   polygonData <- readRDS("data/yahara_shapefile_data.rds")
   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
   nc<-nc_open(nc_file)
+
+  crs <- list(grid_mapping_name = "albers_conical_equal_area",
+            longitude_of_central_meridian = -96,
+            latitude_of_projection_origin = 23,
+            false_easting = 0.0,
+            false_northing = 0.0,
+            standard_parallel = c(29.5, 45.5),
+            semi_major_axis = 6378137.0,
+            inverse_flattening = 298.257223563,
+            longitude_of_prime_meridian = 0)
+
+  expect_equal(ncatt_get(nc, pkg.env$crs_var_name)[names(crs)], crs)
+
   expect_equal(as.numeric(polygonData@data$GRIDCODE),as.numeric(ncvar_get(nc, varid = "GRIDCODE")))
   expect_equal(length(nc$dim$instance$vals), length(polygonData@polygons))
 

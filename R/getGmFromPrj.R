@@ -12,7 +12,7 @@
 #'
 #' @return A named list containing attributes required for that grid_mapping.
 #'
-#' @importFrom rgdal CRSargs
+#' @importFrom rgdal CRSargs checkCRSArgs
 #' @importFrom sp CRS
 #' @export
 #'
@@ -22,7 +22,9 @@
 #'
 getGmFromPrj <- function(prj) {
   al <- prepCRS(prj)
-  GGFP(al)
+  if(is.null(al)) {
+    return(list()) } else {
+    return(GGFP(al)) }
 }
 
 GGFP <- function(al) UseMethod("GGFP")
@@ -182,8 +184,19 @@ oneStandPar_gm <- function(al) {
 }
 
 getGeoDatum_gm <- function(al) {
-  list(semi_major_axis = as.numeric(al$a),
-       inverse_flattening = (1/as.numeric(al$f)))
+  if(!is.null(al$datum) && al$datum == "NAD83") {
+    list(semi_major_axis = 6378137,
+         inverse_flattening = 298.257222101,
+         longitude_of_prime_meridian = 0)
+  } else if(!is.null(al$datum) && al$datum == "WGS84") {
+    list(semi_major_axis = 6378137,
+         inverse_flattening = 298.257223563,
+         longitude_of_prime_meridian = 0)
+  } else {
+    list(semi_major_axis = as.numeric(al$a),
+        inverse_flattening = (1/as.numeric(al$f)),
+        longitude_of_prime_meridian = as.numeric(al$pm))
+  }
 }
 
 scaleFactor_gm <- function(al) {
@@ -201,7 +214,10 @@ lonProjCent_gm <- function(al) {
 prepCRS <- function(prj) {
   if(class(prj) == "CRS") prj <- CRSargs(prj)
 
-  checkCRS <- CRS(prj) # verify assumptions but round tripping through CRS.
+  if(!checkCRSArgs(prj)[1][[1]]) {
+    warning("not a valid crs, returning an empty crs list")
+    return(NULL)
+  }
 
   args <- unique(unlist(strsplit(prj, " ")))
 
@@ -226,5 +242,8 @@ prepCRS <- function(prj) {
 
   class(argList) <- cf_proj_lookup[unlist(argList["proj"])][[1]]
 
-  return(argList)
+  if(!class(argList) %in% cf_proj_lookup) {
+    warning("no available mapping to netcdf projection, returning empty crs list")
+    return(NULL) } else {
+    return(argList) }
 }

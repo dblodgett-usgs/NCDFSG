@@ -1,7 +1,31 @@
 context("Test get proj from netcdf")
 
-test_that("wgs 84 lat lon", {
+test_that("getGmFromPrj works for a CRS class and not just a string", {
   library(sp)
+  p <- "+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
+
+  c <- list(grid_mapping_name="latitude_longitude",
+            longitude_of_prime_meridian = 0,
+            semi_major_axis = 6378137,
+            inverse_flattening = 298.257223563)
+
+  pCRS_class <- CRS(projargs = p)
+
+  crs <- getGmFromPrj(pCRS_class)
+
+  expect_equal(crs, c[names(crs)])
+})
+
+test_that("getGmFromPrj returns an empty list if no mapping exists", {
+  p <- ""
+
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs, list())
+  expect_warning(getGmFromPrj(p), "not a valid crs, returning an empty crs list")
+})
+
+test_that("wgs 84 lat lon", {
   p <- "+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
 
   c <- list(grid_mapping_name="latitude_longitude",
@@ -20,12 +44,6 @@ test_that("wgs 84 lat lon", {
   crs <- getGmFromPrj(p)
 
   expect_equal(crs, c[names(crs)])
-
-  pCRS_class <- CRS(projargs = p)
-
-  crs <- getGmFromPrj(pCRS_class)
-
-  expect_equal(crs, c[names(crs)])
 })
 
 test_that("albers equal area epsg:5070", {
@@ -38,11 +56,30 @@ test_that("albers equal area epsg:5070", {
               false_northing = 0.0,
               standard_parallel = c(29.5, 45.5),
               semi_major_axis = 6378137.0,
-              inverse_flattening = 298.257223563)
+              inverse_flattening = 298.257223563,
+              longitude_of_prime_meridian = 0)
 
   prj <- getPrjFromNCDF(c)
 
   expect_equal(prj, p)
+
+  crs <- getGmFromPrj(p)
+
+  expect_equal(crs, c[names(crs)])
+})
+
+test_that("albers equal area epsg:5070 with datum instead of a b", {
+  p <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
+
+  c <- list(grid_mapping_name = "albers_conical_equal_area",
+            longitude_of_central_meridian = -96,
+            latitude_of_projection_origin = 23,
+            false_easting = 0.0,
+            false_northing = 0.0,
+            standard_parallel = c(29.5, 45.5),
+            semi_major_axis = 6378137.0,
+            inverse_flattening = 298.257222101,
+            longitude_of_prime_meridian = 0)
 
   crs <- getGmFromPrj(p)
 

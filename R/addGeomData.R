@@ -139,6 +139,17 @@ addGeomData<-function(nc_file, geomData, instanceDimName, variables = c()) {
 
   ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$node_coordinates, attval = 'x y')
 
+  crs <- getGmFromPrj(geomData@proj4string)
+
+  if(length(crs) > 0) {
+    ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$crs, attval = pkg.env$crs_var_name)
+    crs_var <- ncvar_def(name = pkg.env$crs_var_name, units = '', dim = list())
+    ncvar_add(nc, crs_var)
+    nc_close(nc)
+    nc <- nc_open(nc_file,write = TRUE)
+    for(crs_att in names(crs)) ncatt_put(nc = nc, varid = pkg.env$crs_var_name, attname = crs_att, attval = crs[crs_att][[1]])
+  }
+
   if(!pointsMode && (multis || holes)) {
     part_node_count_dim<-ncdim_def(pkg.env$part_dim_name, '', 1:length(part_node_count), create_dimvar = FALSE)
     part_node_count_var<-ncvar_def(name = pkg.env$part_node_count_var_name, units = '', dim = part_node_count_dim,
