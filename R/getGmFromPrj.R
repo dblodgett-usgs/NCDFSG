@@ -12,6 +12,7 @@
 #'
 #' @return A named list containing attributes required for that grid_mapping.
 #'
+#' @importFrom rgdal CRSargs
 #' @importFrom sp CRS
 #' @export
 #'
@@ -198,6 +199,8 @@ lonProjCent_gm <- function(al) {
 }
 
 prepCRS <- function(prj) {
+  if(class(prj) == "CRS") prj <- CRSargs(prj)
+
   checkCRS <- CRS(prj) # verify assumptions but round tripping through CRS.
 
   args <- unique(unlist(strsplit(prj, " ")))

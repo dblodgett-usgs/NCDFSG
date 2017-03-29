@@ -1,6 +1,7 @@
 context("Test get proj from netcdf")
 
 test_that("wgs 84 lat lon", {
+  library(sp)
   p <- "+proj=longlat +a=6378137 +f=0.00335281066474748 +pm=0 +units=m +no_defs"
 
   c <- list(grid_mapping_name="latitude_longitude",
@@ -17,6 +18,12 @@ test_that("wgs 84 lat lon", {
   expect_equal(prj, p)
 
   crs <- getGmFromPrj(p)
+
+  expect_equal(crs, c[names(crs)])
+
+  pCRS_class <- CRS(projargs = p)
+
+  crs <- getGmFromPrj(pCRS_class)
 
   expect_equal(crs, c[names(crs)])
 })

@@ -4,6 +4,7 @@ Title: NetCDF-CF Simple Geometries
 Imports:
   ncdf4,
   sp,
+  rgdal,
   netcdf.dsg
 Depends:
   R (>= 3.0)
