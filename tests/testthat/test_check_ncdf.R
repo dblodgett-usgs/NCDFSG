@@ -65,6 +65,14 @@ test_that("basic point works", {
   expect_equal(checkVals$instanceDim, pkg.env$instance_dim_name)
 })
 
+test_that("a crs gets found correctly", {
+  polygonData <- readRDS("data/yahara_shapefile_data.rds")
+  nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = polygonData)
+  nc<-nc_open(nc_file)
+  checkVals <- checkNCDF(nc)
+  expect_equal(checkVals$crs[[1]], pkg.env$crs_var_name)
+})
+
 test_that("errors", {
   multipointData <- readRDS("data/pointData.rds")
   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = multipointData)

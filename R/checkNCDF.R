@@ -74,10 +74,24 @@ checkNCDF <- function(nc) {
   } else {
     instanceDim <- nc$var[geom_container$node_count][[1]]$dim[[1]]$name }
 
+  crs_referents <- c(findVarByAtt(nc, "grid_mapping", strict="false"), findVarByAtt(nc, "crs", strict = FALSE))
+
+  crs <- list()
+  if(length(crs_referents) > 0) {
+    for(crs_referent in crs_referents) {
+      if(ncatt_get(nc, crs_referent, "crs")$hasatt) {
+        crs <- c(crs, ncatt_get(nc, crs_referent, "crs")$value)
+      } else {
+        crs <- c(crs, ncatt_get(nc, crs_referent, "grid_mapping")$value)
+      }
+    }
+  }
+
   return(list(instance_id = instance_id,
               instanceDim = instanceDim,
               geom_container = geom_container,
-              variable_list = variable_list))
+              variable_list = variable_list,
+              crs = crs))
 }
 
 findVarByAtt <- function(nc, attribute, value = "*", strict = TRUE) {
