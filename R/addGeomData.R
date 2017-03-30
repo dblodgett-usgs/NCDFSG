@@ -6,7 +6,7 @@
 #'@param geomData An object of class \code{SpatialLines} or \code{SpatialPolygons} with
 #'WGS84 lon in the x coordinate and lat in the y coordinate.
 #'Note that three dimensional geometries is not supported.
-#'@param instanceDimName A string to name the instance dimension.  Defaults to "instance"
+#'@param instance_dim_name A string to name the instance dimension.  Defaults to "instance"
 #'@param variables A character vector of variable names that the geometry data
 #'container variable name will be added to.
 
@@ -17,10 +17,10 @@
 #'@references
 #'https://github.com/bekozi/netCDF-CF-simple-geometry
 #'
-#'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def
+#'@importFrom ncdf4 nc_open ncvar_add nc_close ncvar_def ncvar_put ncatt_put ncdim_def nc_create
 #'
 #'@export
-addGeomData<-function(nc_file, geomData, instanceDimName, variables = c()) {
+addGeomData<-function(nc_file, geomData, instance_dim_name, variables = c()) {
 
   node_dim_name <- pkg.env$node_dim_name
 
@@ -90,13 +90,25 @@ addGeomData<-function(nc_file, geomData, instanceDimName, variables = c()) {
     node_count <- c(node_count, nCount)
   }
   }
-  nc <- nc_open(nc_file,write = TRUE)
 
   node_dim<-ncdim_def(node_dim_name, '', 1:length(xVals), create_dimvar=FALSE)
   xVar <- ncvar_def(name = "x", units = 'degrees_east', dim = node_dim, prec = "double")
   yVar <- ncvar_def(name = "y", units = 'degrees_north', dim = node_dim, prec = "double")
-  nc <- ncvar_add(nc,xVar)
-  nc <- ncvar_add(nc,yVar)
+
+  if(file.exists(nc_file)) {
+    new_file <- TRUE
+    nc <- nc_open(nc_file,write = TRUE)
+    nc <- ncvar_add(nc,xVar)
+    nc <- ncvar_add(nc,yVar)
+  } else {
+    new_file <- FALSE
+    nc <- nc_create(nc_file, list(xVar, yVar))
+  }
+
+  nc_close(nc)
+  nc <- nc_open(nc_file,write = TRUE)
+
+
   ncvar_put(nc = nc, varid = 'x', vals = xVals)
   ncvar_put(nc = nc, varid = 'y', vals = yVals)
   ncatt_put(nc = nc, varid = 'x', attname = 'standard_name', attval = 'longitude')
@@ -131,7 +143,11 @@ addGeomData<-function(nc_file, geomData, instanceDimName, variables = c()) {
   }
   if(!(pointsMode && !multis)) {
     ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$node_count_attr_name, attval = pkg.env$node_count_var_name)
-    node_count_var<-ncvar_def(name = pkg.env$node_count_var_name, units = '', dim = nc$dim[instanceDimName],
+
+    instanceDim <- nc$dim[instance_dim_name]
+    if(is.null(unlist(instanceDim))) instanceDim <- ncdim_def(instance_dim_name, '', 1:length(node_count), create_dimvar = FALSE)
+
+    node_count_var<-ncvar_def(name = pkg.env$node_count_var_name, units = '', dim = instanceDim,
                               longname = "count of coordinates in each instance geometry", prec = "integer")
     nc <- ncvar_add(nc, node_count_var)
     ncvar_put(nc = nc, varid = pkg.env$node_count_var_name, vals = node_count)

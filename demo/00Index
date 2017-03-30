@@ -1,1 +1,3 @@
-sample_shape    Shows how to turn WKT into NetCDF then NetCDF into a Shapefile.
+sample_shape           Shows how to turn WKT into NetCDF then NetCDF into a Shapefile.
+hrus_demo              Shows how to turn hru shapefiles into netcdf.
+write_huc12_example    Shows how the huc12 example was created.

@@ -86,7 +86,7 @@ test_that("errors", {
   multipointData <- readRDS("data/pointData.rds")
   nc_file <- ToNCDFSG(nc_file=tempfile(), geomData = multipointData)
   nc <- nc_open(nc_file, write = TRUE)
-  ncatt_put(nc, nc$var$instance_name, pkg.env$geom_type_attr_name, "garbage")
+  ncatt_put(nc, nc$var$y, pkg.env$geom_type_attr_name, "garbage")
   nc_close(nc)
   nc<-nc_open(nc_file, write = TRUE)
   expect_error(checkNCDF(nc), "only one geometry container per file supported")

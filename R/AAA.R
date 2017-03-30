@@ -11,7 +11,6 @@ pkg.env$part_node_count_var_name <- "part_node_count"
 pkg.env$part_type_var_name <- "interior_ring"
 pkg.env$node_count_var_name <- "node_count"
 pkg.env$geom_container_var_name <- "geometry_container"
-pkg.env$instance_var_name <- "instance_name"
 pkg.env$crs_var_name <- "crs"
 
 # Variables prescribed in the specification.

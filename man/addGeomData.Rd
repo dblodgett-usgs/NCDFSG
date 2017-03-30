@@ -4,7 +4,7 @@
 \alias{addGeomData}
 \title{Put geometry data in a NetCDF-CF File}
 \usage{
-addGeomData(nc_file, geomData, instanceDimName, variables = c())
+addGeomData(nc_file, geomData, instance_dim_name, variables = c())
 }
 \arguments{
 \item{nc_file}{A string file path to the nc file to be created. It must already have
@@ -14,7 +14,7 @@ an instance dimension.}
 WGS84 lon in the x coordinate and lat in the y coordinate.
 Note that three dimensional geometries is not supported.}
 
-\item{instanceDimName}{A string to name the instance dimension.  Defaults to "instance"}
+\item{instance_dim_name}{A string to name the instance dimension.  Defaults to "instance"}
 
 \item{variables}{A character vector of variable names that the geometry data
 container variable name will be added to.}

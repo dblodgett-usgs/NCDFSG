@@ -4,8 +4,9 @@
 \alias{ToNCDFSG}
 \title{Convert sp objects to NetCDF}
 \usage{
-ToNCDFSG(nc_file, geomData = NULL, instance_names = NULL, lats = NULL,
-  lons = NULL)
+ToNCDFSG(nc_file, geomData = NULL, instance_names = NULL,
+  instance_dim_name = NULL, lats = NULL, lons = NULL,
+  variables = list())
 }
 \arguments{
 \item{nc_file}{A string file path to the nc file to be created.}
@@ -14,11 +15,18 @@ ToNCDFSG(nc_file, geomData = NULL, instance_names = NULL, lats = NULL,
 \code{SpatialPolygons} with WGS84 lon in the x coordinate and lat in the y coordinate.
 Note that three dimensional geometries is not supported.}
 
-\item{instance_names}{A character vector of names for the points. If NULL, integers are used.}
+\item{instance_names}{A character vector of names for geometries.
+If NULL, integers are used. If the geomData has a data frame, this is not used.}
+
+\item{instance_dim_name}{If the file provided already has an instance dimension,
+it needs to be provided as a character string otherwise a new instance dim may be created.}
 
 \item{lats}{Vector of WGS84 latitudes}
 
 \item{lons}{Vector of WGS84 longitudes}
+
+\item{variables}{If a an existing netcdf files is provided, this list of strings is used
+to add the geometry container attribute to the named existing variables.}
 }
 \description{
 Creates a file with point, line or polygon instance data ready for the extended NetCDF-CF timeSeries featuretype format.

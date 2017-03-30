@@ -14,7 +14,7 @@ test_that("shapefile_point", {
   nc_file<-ToNCDFSG(nc_file = tempfile(), geomData = pointData, instance_names = pointData@data$station_nm)
   nc<-nc_open(nc_file)
   expect_true(all(names(pointData@data) %in% names(nc$var)))
-  expect_equal(as.character(pointData@data$station_nm),as.character(ncvar_get(nc, nc$var$instance_name)))
+  expect_equal(as.character(pointData@data$station_nm),as.character(ncvar_get(nc, nc$var$station_nm)))
   expect_equal(length(ncvar_get(nc, nc$var$y)), length(pointData@coords[,2]))
   expect_equal(length(ncvar_get(nc, nc$var$x)), length(pointData@coords[,1]))
   expect_equal(sum(ncvar_get(nc, nc$var$y)), sum(pointData@coords[,2]))
