@@ -157,6 +157,14 @@ addGeomData<-function(nc_file, geomData, instance_dim_name, variables = c()) {
 
   crs <- getGmFromPrj(geomData@proj4string)
 
+  if(length(crs) == 0) {
+      crs <- list(grid_mapping_name = "latitude_longitude",
+                  semi_major_axis = 6378137,
+                  inverse_flattening = 298.257223563,
+                  longitude_of_prime_meridian = 0)
+      warning("No CRS was found. Assuming WGS84 Lat Lon.")
+  }
+
   if(length(crs) > 0) {
     ncatt_put(nc = nc, varid = pkg.env$geom_container_var_name, attname = pkg.env$crs, attval = pkg.env$crs_var_name)
     crs_var <- ncvar_def(name = pkg.env$crs_var_name, units = '', dim = list())
