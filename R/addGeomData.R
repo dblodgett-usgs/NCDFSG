@@ -39,8 +39,6 @@ addGeomData<-function(nc_file, geomData, instance_dim_name, variables = c()) {
 
   holes <- FALSE
   multis <- FALSE
-  xVals<-c()
-  yVals<-c()
 
   if(pointsMode) {
     ids <- attributes(geomData@coords)$dimnames[[1]]
@@ -71,7 +69,10 @@ addGeomData<-function(nc_file, geomData, instance_dim_name, variables = c()) {
     part_type <- rep(NA,nParts)
     part_node_count <- part_type
     node_count <- rep(NA, nGeoms)
+    xVals <- rep(NA, nCoords)
+    yVals <- xVals
     part <- 0
+    coord <- 1
   for(geom in 1:nGeoms) {
     nCount <- 0
     if(linesMode) { gData <- geomData@lines[[geom]]@Lines
@@ -94,12 +95,13 @@ addGeomData<-function(nc_file, geomData, instance_dim_name, variables = c()) {
       nCount <- nCount + pCount
       part_node_count[part] <-  pCount
       if(linesMode) {
-        xVals<-c(xVals,coords[,1])
-        yVals<-c(yVals,coords[,2])
+        xVals[coord:(coord+length(coords[,1])-1)] <- coords[,1]
+        yVals[coord:(coord+length(coords[,2])-1)] <- coords[,2]
       } else {
-        xVals<-c(xVals,coords[nrow(coords):1,1])
-        yVals<-c(yVals,coords[nrow(coords):1,2])
+        xVals[coord:(coord+length(coords[,1])-1)]<-coords[nrow(coords):1,1]
+        yVals[coord:(coord+length(coords[,2])-1)]<-coords[nrow(coords):1,2]
       }
+      coord <- coord + length(coords[,1])
     }
     node_count[geom] <- nCount
   }
