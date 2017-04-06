@@ -39,19 +39,17 @@ addGeomData<-function(nc_file, geomData, instance_dim_name, variables = c()) {
 
   holes <- FALSE
   multis <- FALSE
-  node_count <- c()
-  part_node_count <- c()
-  part_type <- c() # First is always an outside ring.
   xVals<-c()
   yVals<-c()
 
   if(pointsMode) {
     ids <- attributes(geomData@coords)$dimnames[[1]]
     uIds <- unique(ids)
+    node_count <- c(1:length(uIds))
     if(length(ids) != length(uIds)) {
       multis <- TRUE
-      for(id in uIds) {
-        node_count <- c(node_count, length(which(ids == id)))
+      for(i in 1:length(uIds)) {
+        node_count[i] <- length(which(ids == uIds[i]))
       }
     } else {
       node_dim_name <- pkg.env$instance_dim_name
@@ -59,26 +57,42 @@ addGeomData<-function(nc_file, geomData, instance_dim_name, variables = c()) {
     xVals <- geomData@coords[,1]
     yVals <- geomData@coords[,2]
   } else {
-  for(geom in 1:length(geomData)) {
+    nCoords <- 0
+    nParts <- 0
+    nGeoms <- length(geomData)
+    for(geom in 1:nGeoms) {
+      if(linesMode) { gData <- geomData@lines[[geom]]@Lines
+      } else { gData <- geomData@polygons[[geom]]@Polygons }
+      nParts <- nParts + length(gData)
+      for(part in 1:length(gData)) {
+        nCoords <- nCoords + length(gData[[part]]@coords[,1])
+      }
+    }
+    part_type <- rep(NA,nParts)
+    part_node_count <- part_type
+    node_count <- rep(NA, nGeoms)
+    part <- 0
+  for(geom in 1:nGeoms) {
     nCount <- 0
     if(linesMode) { gData <- geomData@lines[[geom]]@Lines
     } else { gData <- geomData@polygons[[geom]]@Polygons }
-    for(part in 1:length(gData)) {
-      if(part > 1) {
-        if(!linesMode && gData[[part]]@hole) {
-          part_type <- c(part_type, pkg.env$hole_val)
+    for(gPart in 1:length(gData)) {
+      part <- part + 1
+      if(gPart > 1) {
+        if(!linesMode && gData[[gPart]]@hole) {
+          part_type[part] <- pkg.env$hole_val
           holes <- TRUE
         } else {
-          part_type <- c(part_type, pkg.env$multi_val)
+          part_type[part] <- pkg.env$multi_val
           multis <- TRUE
         }
       } else {
-        part_type <- c(part_type, pkg.env$multi_val)
+        part_type[part] <-pkg.env$multi_val
       }
-      coords<-gData[[part]]@coords
+      coords<-gData[[gPart]]@coords
       pCount <- length(coords[,1])
       nCount <- nCount + pCount
-      part_node_count <- c(part_node_count, pCount)
+      part_node_count[part] <-  pCount
       if(linesMode) {
         xVals<-c(xVals,coords[,1])
         yVals<-c(yVals,coords[,2])
@@ -87,7 +101,7 @@ addGeomData<-function(nc_file, geomData, instance_dim_name, variables = c()) {
         yVals<-c(yVals,coords[nrow(coords):1,2])
       }
     }
-    node_count <- c(node_count, nCount)
+    node_count[geom] <- nCount
   }
   }
 
